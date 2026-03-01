@@ -1,0 +1,16 @@
+{
+  "name": "Nur Al-Quran",
+  "short_name": "Nur Quran",
+  "description": "Luxury, spiritually immersive Quran application.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#043927",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ]
+}
