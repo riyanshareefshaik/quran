@@ -48,7 +48,7 @@ const QiblaDirection: React.FC = () => {
 
   // Filter math to smooth crossing the 360/0 degree threshold safely
   const smoothHeading = (rawHeading: number) => {
-    let prev = previousHeading.current;
+    const prev = previousHeading.current;
     let delta = rawHeading - prev;
 
     // Shortest path around the circle
@@ -107,7 +107,7 @@ const QiblaDirection: React.FC = () => {
     const handleDeviceOrientation = (e: any) => {
       if (e.webkitCompassHeading !== undefined) {
         // Prefer True North if the device provides it, otherwise magnetic north
-        let rHeading = e.webkitCompassTrueHeading !== undefined && e.webkitCompassTrueHeading >= 0
+        const rHeading = e.webkitCompassTrueHeading !== undefined && e.webkitCompassTrueHeading >= 0
           ? e.webkitCompassTrueHeading
           : e.webkitCompassHeading;
         setHeading(smoothHeading(rHeading));

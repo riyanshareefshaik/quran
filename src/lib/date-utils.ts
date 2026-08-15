@@ -12,9 +12,9 @@ export function getReligiousCounters() {
     const eidAlFitr = new Date('2026-03-20');
     const eidAlAdha = new Date('2026-05-27');
 
-    let ramadanDays = getDaysUntil(ramadanStart);
-    let eidFitrDays = getDaysUntil(eidAlFitr);
-    let eidAdhaDays = getDaysUntil(eidAlAdha);
+    const ramadanDays = getDaysUntil(ramadanStart);
+    const eidFitrDays = getDaysUntil(eidAlFitr);
+    const eidAdhaDays = getDaysUntil(eidAlAdha);
 
     return {
         isRamadan: now >= ramadanStart && now < eidAlFitr,
