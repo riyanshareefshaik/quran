@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { fetchChapters, Chapter } from '@/lib/quran-api';
 
 interface SearchResult {
     verse_key: string;
@@ -17,6 +18,8 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
     const [results, setResults] = useState<SearchResult[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [filter, setFilter] = useState<'all' | 'meccan' | 'medinan'>('all');
+    const [searchError, setSearchError] = useState<string | null>(null);
+    const [chapters, setChapters] = useState<Chapter[]>([]);
 
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -24,33 +27,54 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
         if (isOpen && inputRef.current) {
             inputRef.current.focus();
         }
-    }, [isOpen]);
+        // Load chapter names once, lazily, only when the modal is first
+        // opened — used to resolve "2" -> "Al-Baqarah" for the number-jump
+        // shortcut below, without an extra request on every keystroke.
+        if (isOpen && chapters.length === 0) {
+            fetchChapters().then(setChapters).catch(() => {});
+        }
+    }, [isOpen, chapters.length]);
+
+    // A query that's purely a number 1-114 means the person wants to jump
+    // straight to that surah, not search verse text for the digit itself.
+    const trimmedQuery = query.trim();
+    const surahNumberMatch = /^\d{1,3}$/.test(trimmedQuery) ? parseInt(trimmedQuery, 10) : null;
+    const jumpTarget =
+        surahNumberMatch && surahNumberMatch >= 1 && surahNumberMatch <= 114
+            ? { id: surahNumberMatch, chapter: chapters.find((c) => c.id === surahNumberMatch) }
+            : null;
 
     // Debounced Search using Quran.com V4 basic Search API
     useEffect(() => {
         const fetchResults = async () => {
-            if (query.trim().length < 3) {
+            // Pure-number queries are handled by the jump shortcut above,
+            // not sent to the verse-text search API.
+            if (query.trim().length < 3 || jumpTarget) {
                 setResults([]);
+                setSearchError(null);
                 return;
             }
 
             setIsSearching(true);
+            setSearchError(null);
             try {
-                // Simplified mock logic. In a real scenario, use api.quran.com/v4/search
-                // Fetching from Quran.com search API requires specific language params.
-                const res = await fetch(`https://api.quran.com/v4/search?q=${encodeURIComponent(query)}&size=20`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setResults(data.search?.results || []);
+                const res = await fetch(`https://api.quran.com/api/v4/search?q=${encodeURIComponent(query)}&size=20`);
+                if (!res.ok) {
+                    throw new Error(`Search API returned ${res.status}`);
                 }
+                const data = await res.json();
+                setResults(data.search?.results || []);
             } catch (error) {
                 console.error("Search failed", error);
+                setResults([]);
+                setSearchError('Search is temporarily unavailable. Please try again shortly.');
             }
             setIsSearching(false);
         };
 
         const timeoutId = setTimeout(fetchResults, 500);
         return () => clearTimeout(timeoutId);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [query]);
 
     if (!isOpen) return null;
@@ -63,7 +87,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                         ref={inputRef}
                         type="text"
                         className="search-input"
-                        placeholder="Search verses, translations, or Surahs..."
+                        placeholder="Search verses, translations, or type a Surah number..."
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                     />
@@ -77,8 +101,27 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="search-results custom-scrollbar">
-                    {isSearching ? (
+                    {jumpTarget ? (
+                        <Link href={`/surah/${jumpTarget.id}`} className="jump-item" onClick={onClose}>
+                            <div className="jump-number">{jumpTarget.id}</div>
+                            <div className="jump-info">
+                                <div className="jump-title">
+                                    {jumpTarget.chapter ? jumpTarget.chapter.name_complex : `Surah ${jumpTarget.id}`}
+                                </div>
+                                <div className="jump-sub">
+                                    {jumpTarget.chapter
+                                        ? `${jumpTarget.chapter.translated_name.name} · ${jumpTarget.chapter.verses_count} Ayahs`
+                                        : 'Jump to this Surah'}
+                                </div>
+                            </div>
+                            {jumpTarget.chapter && (
+                                <div className="jump-arabic amiri-text">{jumpTarget.chapter.name_arabic}</div>
+                            )}
+                        </Link>
+                    ) : isSearching ? (
                         <div className="search-status">Searching divine texts...</div>
+                    ) : searchError ? (
+                        <div className="search-status error">{searchError}</div>
                     ) : results.length > 0 ? (
                         results.map((res, i) => (
                             <Link href={`/surah/${res.verse_key.split(':')[0]}#${res.verse_key}`} key={i} className="result-item" onClick={onClose}>
@@ -162,7 +205,12 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                     font-size: 2rem;
                     cursor: pointer;
                     line-height: 1;
-                    padding: 0 0.5rem;
+                    padding: 0.5rem;
+                    min-width: 44px;
+                    min-height: 44px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                 }
 
                 .search-filters {
@@ -177,9 +225,10 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                     background: transparent;
                     border: 1px solid var(--emerald-medium);
                     color: var(--emerald-light);
-                    padding: 0.4rem 1rem;
+                    padding: 0.6rem 1.1rem;
+                    min-height: 44px;
                     border-radius: 20px;
-                    font-size: 0.8rem;
+                    font-size: 0.85rem;
                     cursor: pointer;
                     transition: all 0.2s;
                 }
@@ -201,6 +250,60 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                     padding: 3rem;
                     color: var(--emerald-light);
                     font-style: italic;
+                }
+
+                .search-status.error {
+                    color: #e0a04a;
+                    font-style: normal;
+                }
+
+                .jump-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    padding: 1rem 1.5rem;
+                    margin: 0.5rem 1rem;
+                    text-decoration: none;
+                    background: rgba(212, 175, 55, 0.08);
+                    border: 1px solid rgba(212, 175, 55, 0.3);
+                    border-radius: 10px;
+                    transition: background 0.2s;
+                }
+
+                .jump-item:hover {
+                    background: rgba(212, 175, 55, 0.15);
+                }
+
+                .jump-number {
+                    width: 40px;
+                    height: 40px;
+                    flex-shrink: 0;
+                    border-radius: 50%;
+                    background: var(--gold-primary);
+                    color: var(--matte-black);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: 700;
+                }
+
+                .jump-info {
+                    flex: 1;
+                }
+
+                .jump-title {
+                    color: var(--off-white);
+                    font-weight: 600;
+                }
+
+                .jump-sub {
+                    font-size: 0.8rem;
+                    color: var(--emerald-light);
+                }
+
+                .jump-arabic {
+                    font-size: 1.4rem;
+                    color: var(--gold-primary);
                 }
 
                 .result-item {

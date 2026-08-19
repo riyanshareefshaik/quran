@@ -9,6 +9,8 @@ import SpiritualTracker from '@/components/SpiritualTracker';
 import { getReligiousCounters } from '@/lib/date-utils';
 import PrayerCalendar from '@/components/PrayerCalendar';
 import SearchModal from '@/components/SearchModal';
+import OrnateFrame from '@/components/OrnateFrame';
+import OrnateDivider from '@/components/OrnateDivider';
 
 export default function Home() {
   const [showCalendar, setShowCalendar] = useState(false);
@@ -20,18 +22,20 @@ export default function Home() {
       <main className="main-content">
         {/* Header Section */}
         <section className="header-section">
-          <div className="logo-mini">
-            <Image
-              src="/logo.png"
-              alt="Nur Al-Quran Logo"
-              width={80}
-              height={80}
-              priority
-              className="glow-effect"
-            />
-          </div>
-          <h1 className="gold-text">Nur Al-Quran</h1>
-          <p className="subtitle">Light of the Quran</p>
+          <OrnateFrame style={{ background: 'radial-gradient(ellipse at center, rgba(212, 175, 55, 0.05), transparent 70%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div className="logo-mini">
+              <Image
+                src="/logo.png"
+                alt="Nur Al-Quran Logo"
+                width={80}
+                height={80}
+                priority
+                className="glow-effect"
+              />
+            </div>
+            <h1 className="gold-text font-display">Nur Al-Quran</h1>
+            <p className="subtitle">Light of the Quran</p>
+          </OrnateFrame>
 
           <div className="search-container">
             <button
@@ -43,10 +47,13 @@ export default function Home() {
           </div>
         </section>
 
+        <OrnateDivider style={{ maxWidth: 320, margin: '0 auto 3rem' }} />
+
         {/* Spiritual Dashboard Section */}
         <section className="dashboard-section">
           <div className="dashboard-grid">
             <PrayerTimes />
+            <div className="book-spine" aria-hidden="true" />
             <div className="dashboard-secondary">
               <SpiritualTracker />
               <div className="dash-row">
@@ -79,7 +86,7 @@ export default function Home() {
         <section className="cta-section">
           <div className="hero-card glass-card">
             <div className="hero-content">
-              <h2 className="gold-text">The Complete Revelation</h2>
+              <h2 className="gold-text font-display">The Complete Revelation</h2>
               <p className="hero-desc">Explore all 114 Surahs, beautifully formatted with word-by-word translations, interactive memorization modes, and immersive audio recitation.</p>
               <Link href="/surahs" className="read-now-btn">
                 Enter the Quran →
@@ -118,10 +125,11 @@ export default function Home() {
 
         .header-section {
           margin-top: 2rem;
-          margin-bottom: 3rem;
+          margin-bottom: 2.5rem;
           display: flex;
           flex-direction: column;
           align-items: center;
+          gap: 2rem;
         }
 
         .logo-mini {
@@ -135,15 +143,13 @@ export default function Home() {
 
         h1 {
           font-size: 3rem;
-          font-weight: 700;
-          margin-bottom: 0.2rem;
-          letter-spacing: -1px;
+          margin-bottom: 0.4rem;
         }
 
         .subtitle {
           font-size: 1.2rem;
           color: var(--emerald-light);
-          margin-bottom: 3rem;
+          margin-bottom: 0;
           font-weight: 300;
           letter-spacing: 2px;
           text-transform: uppercase;
@@ -156,9 +162,46 @@ export default function Home() {
 
         .dashboard-grid {
           display: grid;
-          grid-template-columns: 2fr 1fr;
+          grid-template-columns: 2fr auto 1fr;
           gap: 1.5rem;
           align-items: stretch;
+        }
+
+        .book-spine {
+          width: 1px;
+          background: linear-gradient(
+            to bottom,
+            transparent,
+            rgba(212, 175, 55, 0.5) 15%,
+            rgba(212, 175, 55, 0.5) 85%,
+            transparent
+          );
+          position: relative;
+        }
+
+        .book-spine::before,
+        .book-spine::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          width: 16px;
+        }
+
+        .book-spine::before {
+          right: 0;
+          background: linear-gradient(to left, rgba(0, 0, 0, 0.25), transparent);
+        }
+
+        .book-spine::after {
+          left: 0;
+          background: linear-gradient(to right, rgba(0, 0, 0, 0.25), transparent);
+        }
+
+        @media (max-width: 1024px) {
+          .book-spine {
+            display: none;
+          }
         }
 
         .dashboard-secondary {
@@ -214,9 +257,10 @@ export default function Home() {
           background: transparent;
           border: 1px solid var(--gold-primary);
           color: var(--gold-primary);
-          padding: 0.4rem 0.8rem;
-          font-size: 0.7rem;
-          border-radius: 4px;
+          padding: 0.7rem 1rem;
+          font-size: 0.75rem;
+          min-height: 44px;
+          border-radius: 6px;
           cursor: pointer;
           transition: all 0.3s;
           text-transform: uppercase;

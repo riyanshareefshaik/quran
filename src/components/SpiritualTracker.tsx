@@ -36,7 +36,7 @@ const SpiritualTracker: React.FC = () => {
 
   return (
     <div className="spiritual-tracker-widget glass-card">
-      <h4 className="label gold-text">Spiritual Progress</h4>
+      <h4 className="label gold-text font-display">Spiritual Progress</h4>
 
       <div className="tracker-main">
         {/* Completion Ring */}
@@ -205,28 +205,37 @@ const SpiritualTracker: React.FC = () => {
 
                 .last-read-section {
                     background: rgba(4, 57, 39, 0.4);
-                    padding: 0.8rem 1rem;
+                    padding: 0.6rem 1rem;
                     border-radius: 8px;
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
+                    gap: 0.75rem;
                     border: 1px solid rgba(212, 175, 55, 0.2);
                 }
 
                 .last-read-label {
                     font-size: 0.8rem;
                     color: var(--emerald-light);
+                    flex-shrink: 0;
                 }
 
                 .last-read-link {
-                    font-size: 0.9rem;
-                    color: var(--gold-primary);
+                    font-size: 0.95rem;
+                    color: var(--matte-black);
+                    background: var(--gold-primary);
                     font-weight: 600;
                     text-decoration: none;
+                    padding: 0.65rem 1.1rem;
+                    border-radius: 8px;
+                    min-height: 44px;
+                    display: inline-flex;
+                    align-items: center;
+                    transition: opacity 0.2s;
                 }
                 
                 .last-read-link:hover {
-                    text-decoration: underline;
+                    opacity: 0.85;
                 }
 
                 .weekly-chart {

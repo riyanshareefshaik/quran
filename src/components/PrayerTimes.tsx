@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { fetchPrayerTimes, PrayerData } from '@/lib/prayer-api';
+import { getCurrentPosition } from '@/lib/geolocation';
 import { useSettings } from '@/context/SettingsContext';
 
 const PRAYERS = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
@@ -16,21 +17,23 @@ const PrayerTimes: React.FC = () => {
 
   // Fetch Prayer Data
   useEffect(() => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          const prayerData = await fetchPrayerTimes(latitude, longitude, prayerCalculationMethod);
-          if (prayerData) {
-            setData(prayerData);
-          }
-        },
-        (error) => {
-          console.warn('Geolocation access denied or failed. Prayer times need location.');
-          setLocationError('Allow location for accurate prayer times.');
+    let cancelled = false;
+
+    getCurrentPosition()
+      .then(async ({ latitude, longitude }) => {
+        const prayerData = await fetchPrayerTimes(latitude, longitude, prayerCalculationMethod);
+        if (!cancelled && prayerData) {
+          setData(prayerData);
         }
-      );
-    }
+      })
+      .catch(() => {
+        console.warn('Geolocation access denied or failed. Prayer times need location.');
+        if (!cancelled) setLocationError('Allow location for accurate prayer times.');
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [prayerCalculationMethod]);
 
   // Live Timer tick

@@ -8,6 +8,7 @@ import { useAudio } from '@/context/AudioContext';
 import { useProgress } from '@/context/ProgressContext';
 import { useSettings, FontSize } from '@/context/SettingsContext';
 import AyahShareModal from '@/components/AyahShareModal';
+import OrnateDivider from '@/components/OrnateDivider';
 
 interface VerseCardProps {
   verse: Verse;
@@ -731,7 +732,7 @@ export default function SurahPage() {
       <header className="surah-header">
         <Link href="/" className="back-link">← Index</Link>
         <div className="surah-title">
-          <h1 className="gold-text">{chapter?.name_complex}</h1>
+          <h1 className="gold-text font-display">{chapter?.name_complex}</h1>
           <div className="translation-selector relative" ref={dropdownRef}>
             <div
               className="custom-dropdown-trigger"
@@ -834,6 +835,12 @@ export default function SurahPage() {
           )}
         </div>
       </header>
+
+      {!focusMode && (
+        <div style={{ maxWidth: 320, margin: '0 auto 2rem' }}>
+          <OrnateDivider />
+        </div>
+      )}
 
       <main className="verses-list">
         {chapter?.bismillah_pre && !focusMode && (

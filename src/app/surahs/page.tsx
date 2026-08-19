@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { fetchChapters, Chapter } from '@/lib/quran-api';
 import SurahList from '@/components/SurahList';
 import SearchModal from '@/components/SearchModal';
+import OrnateFrame from '@/components/OrnateFrame';
+import OrnateDivider from '@/components/OrnateDivider';
 
 export default function SurahsPage() {
     const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -34,10 +36,6 @@ export default function SurahsPage() {
 
                 <header className="page-header">
                     <Link href="/" className="back-link">← Retreat to Home</Link>
-                    <div className="title-area">
-                        <h1 className="gold-text">Sacred Chapters</h1>
-                        <p className="subtitle">The complete revelation</p>
-                    </div>
                     <button
                         className="global-search-trigger glass-card"
                         onClick={() => setShowSearchModal(true)}
@@ -45,6 +43,15 @@ export default function SurahsPage() {
                         <span className="search-icon">🔍</span> Advanced Search
                     </button>
                 </header>
+
+                <OrnateFrame style={{ background: 'radial-gradient(ellipse at center, rgba(212, 175, 55, 0.05), transparent 70%)', marginBottom: '2rem' }}>
+                    <div className="title-area">
+                        <h1 className="gold-text font-display">Sacred Chapters</h1>
+                        <p className="subtitle">The complete revelation</p>
+                    </div>
+                </OrnateFrame>
+
+                <OrnateDivider style={{ maxWidth: 320, margin: '0 auto 3rem' }} />
 
                 <section className="content-section">
                     <div className="filter-container">
@@ -95,9 +102,7 @@ export default function SurahsPage() {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 3rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid var(--glass-border);
+            margin-bottom: 2rem;
         }
 
         .back-link {
@@ -116,9 +121,7 @@ export default function SurahsPage() {
 
         h1 {
           font-size: 2.5rem;
-          font-weight: 700;
-          margin-bottom: 0.2rem;
-          letter-spacing: -1px;
+          margin-bottom: 0.3rem;
         }
 
         .subtitle {

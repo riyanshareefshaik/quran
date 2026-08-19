@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
 import { fetchChapterRecitation, RECITERS } from '@/lib/quran-api';
+import { buildTtsUrl } from '@/lib/api-config';
 import { useProgress } from '@/context/ProgressContext';
 
 interface AudioState {
@@ -290,7 +291,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 }
 
                 const chunk = chunks[currentChunkIndex];
-                const url = `/api/tts?lang=${langCode}&text=${encodeURIComponent(chunk)}`;
+                const url = buildTtsUrl(langCode, chunk);
 
                 translationAudioRef.current.src = url;
                 translationAudioRef.current.onended = () => {

@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAudio } from '@/context/AudioContext';
+import { useBookmarks } from '@/context/BookmarkContext';
 
 interface SurahCardProps {
   id: number;
@@ -20,6 +21,7 @@ const SurahCard: React.FC<SurahCardProps> = ({
   translatedName,
 }) => {
   const { playChapter, isPlaying, currentChapterId } = useAudio();
+  const { isBookmarked, toggleBookmark } = useBookmarks();
 
   const handlePlay = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -27,7 +29,14 @@ const SurahCard: React.FC<SurahCardProps> = ({
     playChapter(id, name);
   };
 
+  const handleBookmark = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleBookmark(id, name);
+  };
+
   const isCurrentPlaying = isPlaying && currentChapterId === id;
+  const bookmarked = isBookmarked(id);
 
   return (
     <Link href={`/surah/${id}`} className="surah-card-link">
@@ -55,10 +64,15 @@ const SurahCard: React.FC<SurahCardProps> = ({
             <span className="action-label">{isCurrentPlaying ? 'Pause' : 'Play'}</span>
           </div>
           <div className="action-item">
-            <button className="action-btn" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} title="Bookmark">
-              🔖
+            <button
+              className={`action-btn ${bookmarked ? 'bookmarked' : ''}`}
+              onClick={handleBookmark}
+              title={bookmarked ? 'Remove Bookmark' : 'Bookmark'}
+              aria-pressed={bookmarked}
+            >
+              {bookmarked ? '★' : '🔖'}
             </button>
-            <span className="action-label">Bookmark</span>
+            <span className="action-label">{bookmarked ? 'Saved' : 'Bookmark'}</span>
           </div>
           <div className="action-item">
             <button className="action-btn" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} title="Download">
@@ -204,12 +218,44 @@ const SurahCard: React.FC<SurahCardProps> = ({
           transform: translateY(0);
         }
 
+        /* Touchscreens have no :hover state, so the overlay would otherwise
+           never appear. Show it permanently (as a compact bottom bar) on
+           devices that can't hover, instead of relying on a hover reveal. */
+        @media (hover: none) {
+          .surah-actions-overlay {
+            opacity: 1;
+            transform: none;
+            position: static;
+            background: transparent;
+            backdrop-filter: none;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            padding-top: 0.75rem;
+            margin-top: 0.75rem;
+            border-top: 1px solid var(--glass-border);
+          }
+
+          .action-label {
+            opacity: 1;
+            transform: none;
+          }
+
+          .surah-card {
+            flex-wrap: wrap;
+          }
+
+          .surah-info,
+          .surah-arabic-info {
+            flex-basis: auto;
+          }
+        }
+
         .action-btn {
           background: rgba(0, 0, 0, 0.4);
           border: 1px solid var(--emerald-medium);
           color: var(--gold-primary);
-          width: 45px;
-          height: 45px;
+          width: 48px;
+          height: 48px;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -218,6 +264,19 @@ const SurahCard: React.FC<SurahCardProps> = ({
           font-size: 1.2rem;
           transition: all 0.2s;
           transform: scale(0.9);
+        }
+
+        .action-btn.bookmarked {
+          background: rgba(212, 175, 55, 0.2);
+          border-color: var(--gold-primary);
+        }
+
+        @media (hover: none) {
+          .action-btn {
+            transform: none;
+            width: 44px;
+            height: 44px;
+          }
         }
 
         .surah-card:hover .action-btn {

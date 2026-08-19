@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { fetchMonthlyCalendar, PrayerData } from '@/lib/prayer-api';
+import { getCurrentPosition } from '@/lib/geolocation';
 
 interface PrayerCalendarProps {
     onClose: () => void;
@@ -10,19 +11,25 @@ interface PrayerCalendarProps {
 const PrayerCalendar: React.FC<PrayerCalendarProps> = ({ onClose }) => {
     const [calendar, setCalendar] = useState<PrayerData[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-            const now = new Date();
-            const data = await fetchMonthlyCalendar(
-                pos.coords.latitude,
-                pos.coords.longitude,
-                now.getMonth() + 1,
-                now.getFullYear()
-            );
-            if (data) setCalendar(data);
-            setLoading(false);
-        });
+        getCurrentPosition()
+            .then(async ({ latitude, longitude }) => {
+                const now = new Date();
+                const data = await fetchMonthlyCalendar(
+                    latitude,
+                    longitude,
+                    now.getMonth() + 1,
+                    now.getFullYear()
+                );
+                if (data) setCalendar(data);
+                setLoading(false);
+            })
+            .catch(() => {
+                setError('Allow location access to view the prayer calendar.');
+                setLoading(false);
+            });
     }, []);
 
     return (
@@ -36,6 +43,8 @@ const PrayerCalendar: React.FC<PrayerCalendarProps> = ({ onClose }) => {
                 <div className="calendar-content">
                     {loading ? (
                         <div className="loader-center">Calculating timings...</div>
+                    ) : error ? (
+                        <div className="loader-center">{error}</div>
                     ) : (
                         <div className="table-wrapper">
                             <table>

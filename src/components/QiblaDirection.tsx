@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { fetchQibla } from '@/lib/prayer-api';
+import { watchPosition } from '@/lib/geolocation';
 
 const QiblaDirection: React.FC = () => {
   const [qibla, setQibla] = useState<number | null>(null);
@@ -65,18 +66,23 @@ const QiblaDirection: React.FC = () => {
   };
 
   useEffect(() => {
-    let watchId: number;
+    let unwatch: (() => void) | undefined;
+    let cancelled = false;
+
     // Find Qibla using geographic coordinates
-    if ('geolocation' in navigator) {
-      watchId = navigator.geolocation.watchPosition(
-        async (position) => {
-          const exactQibla = await fetchQibla(position.coords.latitude, position.coords.longitude);
-          if (exactQibla !== null) setQibla(exactQibla);
-        },
-        (err) => console.log('Geolocation denied or failed', err),
-        { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
-      );
-    }
+    watchPosition(
+      async ({ latitude, longitude }) => {
+        const exactQibla = await fetchQibla(latitude, longitude);
+        if (exactQibla !== null) setQibla(exactQibla);
+      },
+      (err) => console.log('Geolocation denied or failed', err.message)
+    ).then((fn) => {
+      if (cancelled) {
+        fn(); // effect already cleaned up before the watch resolved
+      } else {
+        unwatch = fn;
+      }
+    });
 
     // Check if device requires explicitly requested hardware permission (iOS 13+)
     if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
@@ -87,7 +93,8 @@ const QiblaDirection: React.FC = () => {
     }
 
     return () => {
-      if (watchId) navigator.geolocation.clearWatch(watchId);
+      cancelled = true;
+      unwatch?.();
     };
   }, []);
 
