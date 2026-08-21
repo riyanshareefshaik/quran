@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
+import OrnateDivider from './OrnateDivider';
 
 const Sidebar: React.FC = () => {
     const pathname = usePathname();
@@ -25,7 +26,10 @@ const Sidebar: React.FC = () => {
                         height={60}
                         className="logo-img glow-effect"
                     />
-                    <h2 className="brand-name gold-text">Nur Al-Quran</h2>
+                    <h2 className="brand-name gold-text font-display">Nur Al-Quran</h2>
+                    <div style={{ width: '80%', margin: '0.25rem 0 0' }}>
+                        <OrnateDivider />
+                    </div>
                 </div>
 
                 <nav className="sidebar-nav">

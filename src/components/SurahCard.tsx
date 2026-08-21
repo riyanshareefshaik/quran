@@ -45,7 +45,7 @@ const SurahCard: React.FC<SurahCardProps> = ({
           <span>{isCurrentPlaying ? '||' : id}</span>
         </div>
         <div className="surah-info">
-          <h4 className="surah-name">{name}</h4>
+          <h4 className="surah-name font-display">{name}</h4>
           <p className="surah-translation">{translatedName}</p>
         </div>
         <div className="surah-arabic-info">

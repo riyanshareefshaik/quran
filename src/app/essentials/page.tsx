@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import OrnateFrame from '@/components/OrnateFrame';
+import OrnateDivider from '@/components/OrnateDivider';
 
 interface EssentialItem {
     id: string;
@@ -64,11 +66,17 @@ export default function EssentialsPage() {
         <div className="container">
             <main className="main-content">
                 <header className="page-header">
+                    <Link href="/" className="back-link">← Retreat to Home</Link>
+                </header>
+
+                <OrnateFrame style={{ background: 'radial-gradient(ellipse at center, rgba(212, 175, 55, 0.05), transparent 70%)', marginBottom: '2rem' }}>
                     <div className="title-area">
-                        <h1 className="gold-text">Islamic Essentials</h1>
+                        <h1 className="gold-text font-display">Islamic Essentials</h1>
                         <p className="subtitle">Daily Adhkar & Important Prayers</p>
                     </div>
-                </header>
+                </OrnateFrame>
+
+                <OrnateDivider style={{ maxWidth: 320, margin: '0 auto 3rem' }} />
 
                 <div className="essentials-list">
                     {ESSENTIALS.map((item) => (
@@ -81,7 +89,7 @@ export default function EssentialsPage() {
                                 onClick={() => toggleItem(item.id)}
                             >
                                 <div className="essential-title-group">
-                                    <h2 className="essential-title">{item.title}</h2>
+                                    <h2 className="essential-title font-display">{item.title}</h2>
                                     <h3 className="essential-arabic amiri-text">{item.arabicTitle}</h3>
                                 </div>
                                 <div className="essential-actions">
@@ -145,17 +153,27 @@ export default function EssentialsPage() {
                 }
 
                 .page-header {
-                    margin-bottom: 3rem;
-                    padding-bottom: 1.5rem;
-                    border-bottom: 1px solid var(--glass-border);
+                    margin-bottom: 2rem;
+                    text-align: left;
+                }
+
+                .back-link {
+                    color: var(--emerald-light);
+                    font-size: 0.9rem;
+                    transition: color 0.3s;
+                }
+
+                .back-link:hover {
+                    color: var(--gold-primary);
+                }
+
+                .title-area {
                     text-align: center;
                 }
 
                 h1 {
                     font-size: 2.5rem;
-                    font-weight: 700;
-                    margin-bottom: 0.2rem;
-                    letter-spacing: -1px;
+                    margin-bottom: 0.3rem;
                 }
 
                 .subtitle {
