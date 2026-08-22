@@ -307,21 +307,30 @@ export default function Home() {
         }
 
         .read-now-btn {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
             background: linear-gradient(135deg, var(--gold-primary), var(--gold-secondary));
+            border: 1px solid var(--gold-secondary);
             color: var(--matte-black);
             padding: 1rem 2.5rem;
             border-radius: 50px;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
+            letter-spacing: 0.03em;
             text-decoration: none;
             transition: all 0.3s;
-            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.35);
         }
 
         .read-now-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.4);
+            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.5);
+        }
+
+        .read-now-btn:focus-visible {
+            outline: 2px solid var(--gold-secondary);
+            outline-offset: 3px;
         }
 
         .hero-decorator {

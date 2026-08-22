@@ -233,7 +233,8 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
           background: transparent;
           border: 1px solid var(--emerald-medium);
           color: var(--emerald-light);
-          padding: 0.3rem 0.8rem;
+          padding: 0.5rem 0.9rem;
+          min-height: 32px;
           border-radius: 4px;
           margin-left: 0.6rem;
           font-size: 0.7rem;
@@ -247,6 +248,11 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
           border-color: var(--gold-primary);
           color: var(--gold-primary);
           background: rgba(212, 175, 55, 0.1);
+        }
+
+        .premium-icon-btn:focus-visible {
+          outline: 2px solid var(--gold-primary);
+          outline-offset: 2px;
         }
 
         .arabic-content {
@@ -421,6 +427,12 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
             color: var(--matte-black);
         }
 
+        .play-translation-btn:focus-visible,
+        .stop-translation-btn:focus-visible {
+            outline: 2px solid var(--gold-primary);
+            outline-offset: 2px;
+        }
+
         .stop-translation-btn {
             background: rgba(220, 53, 69, 0.1);
             color: #ff6b6b;
@@ -430,6 +442,30 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
         .stop-translation-btn:hover {
             background: rgba(220, 53, 69, 0.2);
             border-color: #ff6b6b;
+        }
+
+        .reveal-btn {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid var(--gold-primary);
+            color: var(--gold-primary);
+            padding: 0.7rem 1.5rem;
+            min-height: 44px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reveal-btn:hover {
+            background: var(--gold-primary);
+            color: var(--matte-black);
+        }
+
+        .reveal-btn:focus-visible {
+            outline: 2px solid var(--gold-primary);
+            outline-offset: 2px;
         }
 
         .t-text {
@@ -962,8 +998,8 @@ export default function SurahPage() {
             background: none;
             border: 1px solid var(--emerald-light);
             color: var(--emerald-light);
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -976,6 +1012,11 @@ export default function SurahPage() {
         .settings-toggle-btn:hover {
             border-color: var(--gold-primary);
             background: rgba(212, 175, 55, 0.1);
+        }
+
+        .settings-toggle-btn:focus-visible {
+            outline: 2px solid var(--gold-primary);
+            outline-offset: 2px;
         }
 
         .reading-settings-popover {
@@ -1026,10 +1067,20 @@ export default function SurahPage() {
             transition: all 0.2s;
             font-size: 0.8rem;
         }
+
+        .size-btn:hover {
+            background: rgba(212, 175, 55, 0.15);
+            color: var(--gold-primary);
+        }
         
         .size-btn.active {
             background: var(--gold-primary);
             color: var(--matte-black);
+        }
+
+        .size-btn:focus-visible {
+            outline: 2px solid var(--gold-primary);
+            outline-offset: 1px;
         }
 
         .toggle-switch {
@@ -1069,7 +1120,8 @@ export default function SurahPage() {
             background: linear-gradient(135deg, var(--gold-primary), var(--gold-secondary));
             color: var(--matte-black);
             border: none;
-            padding: 0.6rem 1.5rem;
+            padding: 0.8rem 1.5rem;
+            min-height: 44px;
             border-radius: 30px;
             font-weight: 700;
             cursor: pointer;
@@ -1081,6 +1133,11 @@ export default function SurahPage() {
             background: var(--emerald-medium);
             color: var(--gold-primary);
             border: 1px solid var(--gold-primary);
+        }
+
+        .play-header-btn:focus-visible {
+            outline: 2px solid var(--gold-primary);
+            outline-offset: 2px;
         }
 
         .memo-toggle {
@@ -1113,6 +1170,11 @@ export default function SurahPage() {
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
+        }
+
+        .show-next-btn:focus-visible {
+            outline: 2px solid var(--gold-secondary);
+            outline-offset: 3px;
         }
 
         .translation-selector {
@@ -1182,6 +1244,11 @@ export default function SurahPage() {
 
         .return-index-btn:hover .icon {
           transform: translateX(-5px);
+        }
+
+        .return-index-btn:focus-visible {
+          outline: 2px solid var(--gold-primary);
+          outline-offset: 2px;
         }
 
         .surah-arabic-title {
