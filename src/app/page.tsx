@@ -90,7 +90,8 @@ export default function Home() {
               <h2 className="gold-text font-display">The Complete Revelation</h2>
               <p className="hero-desc">Explore all 114 Surahs, beautifully formatted with word-by-word translations, interactive memorization modes, and immersive audio recitation.</p>
               <Link href="/surahs" className="read-now-btn">
-                Enter the Quran →
+                <span>Enter the Quran</span>
+                <span className="btn-arrow">→</span>
               </Link>
             </div>
             <div className="hero-decorator amiri-text">
@@ -357,23 +358,31 @@ export default function Home() {
         .read-now-btn {
             display: inline-flex;
             align-items: center;
-            gap: 0.6rem;
+            gap: 0.9rem;
             background: linear-gradient(135deg, var(--gold-primary), var(--gold-secondary));
-            border: 1px solid var(--gold-secondary);
+            border: 2px solid var(--gold-secondary);
             color: var(--matte-black);
-            padding: 1rem 2.5rem;
+            padding: 1.2rem 3rem;
             border-radius: 50px;
-            font-weight: 700;
-            font-size: 1.05rem;
-            letter-spacing: 0.03em;
+            font-weight: 800;
+            font-size: 1.15rem;
+            letter-spacing: 0.04em;
             text-decoration: none;
             transition: all 0.3s;
-            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.35);
+            box-shadow: 0 12px 35px rgba(212, 175, 55, 0.45);
+        }
+
+        .read-now-btn .btn-arrow {
+            transition: transform 0.3s ease;
         }
 
         .read-now-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 18px 45px rgba(212, 175, 55, 0.6);
+        }
+
+        .read-now-btn:hover .btn-arrow {
+            transform: translateX(4px);
         }
 
         .read-now-btn:focus-visible {

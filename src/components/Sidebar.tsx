@@ -125,8 +125,10 @@ const Sidebar: React.FC = () => {
                     display: flex;
                     align-items: center;
                     gap: 1rem;
-                    padding: 1rem 1.5rem;
+                    padding: 0.9rem 1.5rem;
                     border-radius: 12px;
+                    border: 1px solid rgba(212, 175, 55, 0.12);
+                    background: rgba(4, 57, 39, 0.2);
                     color: var(--emerald-light);
                     transition: all 0.3s ease;
                     position: relative;
@@ -135,14 +137,17 @@ const Sidebar: React.FC = () => {
                 }
 
                 .nav-item:hover {
-                    background: rgba(4, 57, 39, 0.4);
+                    background: rgba(4, 57, 39, 0.5);
+                    border-color: rgba(212, 175, 55, 0.3);
                     color: var(--off-white);
                 }
 
                 .nav-item.active {
                     color: var(--gold-primary);
-                    background: rgba(212, 175, 55, 0.1);
+                    background: rgba(212, 175, 55, 0.12);
+                    border-color: var(--gold-primary);
                     font-weight: 700;
+                    box-shadow: 0 0 20px rgba(212, 175, 55, 0.1);
                 }
 
                 .nav-icon {
@@ -150,6 +155,7 @@ const Sidebar: React.FC = () => {
                     height: 20px;
                     display: flex;
                     align-items: center;
+                    color: inherit;
                     justify-content: center;
                     flex-shrink: 0;
                 }
