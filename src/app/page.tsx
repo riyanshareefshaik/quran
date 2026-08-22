@@ -42,7 +42,8 @@ export default function Home() {
               className="global-search-trigger glass-card"
               onClick={() => setShowSearchModal(true)}
             >
-              <span className="search-icon">🔍</span> Search Quran (Verses, Surahs, Translations)
+              <span className="search-icon">🔍</span>
+              <span className="search-label">Search Quran (Verses, Surahs, Translations)</span>
             </button>
           </div>
         </section>
@@ -153,6 +154,53 @@ export default function Home() {
           font-weight: 300;
           letter-spacing: 2px;
           text-transform: uppercase;
+        }
+
+        .search-container {
+          width: 100%;
+          display: flex;
+          justify-content: center;
+        }
+
+        .global-search-trigger {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.9rem;
+          width: 100%;
+          max-width: 520px;
+          background: rgba(212, 175, 55, 0.06);
+          border: 1px solid rgba(212, 175, 55, 0.4);
+          border-radius: 50px;
+          padding: 0.9rem 1.6rem;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .global-search-trigger:hover {
+          border-color: var(--gold-primary);
+          background: rgba(212, 175, 55, 0.12);
+          transform: translateY(-2px);
+        }
+
+        .global-search-trigger:focus-visible {
+          outline: 2px solid var(--gold-primary);
+          outline-offset: 3px;
+        }
+
+        .global-search-trigger .search-icon {
+          font-size: 1.1rem;
+          flex-shrink: 0;
+          opacity: 0.9;
+        }
+
+        .global-search-trigger .search-label {
+          color: var(--off-white);
+          font-size: 0.95rem;
+          opacity: 0.85;
+          text-align: left;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         .dashboard-section {

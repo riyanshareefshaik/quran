@@ -5,14 +5,15 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import OrnateDivider from './OrnateDivider';
+import NavIcon from './NavIcon';
 
 const Sidebar: React.FC = () => {
     const pathname = usePathname();
 
     const navItems = [
-        { name: 'Dashboard', path: '/', icon: '⌂' },
-        { name: 'Quran', path: '/surahs', icon: '📖' },
-        { name: 'Essentials', path: '/essentials', icon: '🤲' },
+        { name: 'Dashboard', path: '/', icon: 'dashboard' as const },
+        { name: 'Quran', path: '/surahs', icon: 'quran' as const },
+        { name: 'Essentials', path: '/essentials', icon: 'essentials' as const },
     ];
 
     return (
@@ -42,7 +43,7 @@ const Sidebar: React.FC = () => {
                                 href={item.path}
                                 className={`nav-item ${isActive ? 'active' : ''}`}
                             >
-                                <span className="nav-icon">{item.icon}</span>
+                                <span className="nav-icon"><NavIcon name={item.icon} size={20} /></span>
                                 <span className="nav-label">{item.name}</span>
                                 {isActive && <div className="active-indicator"></div>}
                             </Link>
@@ -66,7 +67,7 @@ const Sidebar: React.FC = () => {
                             href={item.path}
                             className={`mobile-tab-item ${isActive ? 'active' : ''}`}
                         >
-                            <span className="tab-icon">{item.icon}</span>
+                            <span className="tab-icon"><NavIcon name={item.icon} size={22} /></span>
                             <span className="tab-label">{item.name}</span>
                         </Link>
                     );
@@ -145,9 +146,12 @@ const Sidebar: React.FC = () => {
                 }
 
                 .nav-icon {
-                    font-size: 1.3rem;
                     width: 24px;
-                    text-align: center;
+                    height: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
                 }
 
                 .active-indicator {
@@ -215,7 +219,9 @@ const Sidebar: React.FC = () => {
                 }
 
                 .tab-icon {
-                    font-size: 1.4rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                     transition: transform 0.3s ease;
                 }
 
