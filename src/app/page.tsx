@@ -65,13 +65,15 @@ export default function Home() {
                     <div className="countdown-val">
                       {counters.isRamadan ? 'LIVE' : counters.daysToRamadan}
                     </div>
-                    <p className="days-label">{counters.isRamadan ? 'Mubarak' : 'Days'}</p>
+                    <p className="days-label">
+                      {counters.isRamadan ? 'Mubarak' : counters.daysToRamadan === 0 ? 'Begins Today' : 'Days'}
+                    </p>
                     <button className="view-cal-btn" onClick={() => setShowCalendar(true)}>Full Schedule</button>
                   </div>
                   <div className="ramadan-card glass-card">
                     <h4 className="label gold-text">Eid al-Fitr</h4>
                     <div className="countdown-val">{counters.daysToEidFitr}</div>
-                    <p className="days-label">Expected</p>
+                    <p className="days-label">{counters.daysToEidFitr === 0 ? 'Mubarak' : 'Expected'}</p>
                     <button className="view-cal-btn" onClick={() => setShowCalendar(true)}>View Dates</button>
                   </div>
                 </div>
@@ -102,10 +104,10 @@ export default function Home() {
 
         {/* Footer */}
         <footer>
-          <div className="authenticity-badge">
+          <Link href="/sources" className="authenticity-badge">
             <span className="badge-icon">✓</span>
             Text verified from official Quran API
-          </div>
+          </Link>
           <p>© 2026 Nur Al-Quran. Elegant. Authentic. Free.</p>
         </footer>
       </main>
@@ -272,7 +274,7 @@ export default function Home() {
         }
 
         .ramadan-card {
-           padding: 1.5rem;
+           padding: 2rem 1.5rem;
            display: flex;
            flex-direction: column;
            align-items: center;
@@ -391,17 +393,19 @@ export default function Home() {
         }
 
         .hero-decorator {
-            font-size: 12rem;
-            color: rgba(212, 175, 55, 0.03);
+            font-size: 11rem;
+            color: rgba(212, 175, 55, 0.09);
             position: absolute;
-            right: 0rem;
+            right: 1.5rem;
             top: 50%;
             transform: translateY(-50%);
             z-index: 1;
             pointer-events: none;
+            line-height: 1;
+            white-space: nowrap;
         }
 
-        .authenticity-badge {
+        :global(.authenticity-badge) {
           display: inline-flex;
           align-items: center;
           padding: 0.4rem 0.8rem;
@@ -411,6 +415,13 @@ export default function Home() {
           font-size: 0.8rem;
           color: var(--emerald-light);
           margin-bottom: 1.5rem;
+          text-decoration: none;
+          transition: all 0.3s ease;
+        }
+
+        :global(.authenticity-badge:hover) {
+          border-color: var(--gold-primary);
+          color: var(--gold-primary);
         }
 
         .badge-icon {

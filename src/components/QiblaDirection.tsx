@@ -10,6 +10,17 @@ const QiblaDirection: React.FC = () => {
   const [permissionGranted, setPermissionGranted] = useState<boolean>(false);
   const [needsPermission, setNeedsPermission] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  // Desktop browsers have no magnetometer/gyroscope, so the "rotate to
+  // calibrate" hint (meant for phones) would otherwise show there too.
+  const [hasMotionSensor, setHasMotionSensor] = useState<boolean>(false);
+
+  useEffect(() => {
+    setHasMotionSensor(
+      typeof window !== 'undefined' &&
+        'DeviceOrientationEvent' in window &&
+        (navigator.maxTouchPoints > 0 || 'ontouchstart' in window)
+    );
+  }, []);
 
   // Alpha for the Low Pass Filter (0.0 to 1.0)
   // Higher = more responsive; Lower = smoother
@@ -196,7 +207,7 @@ const QiblaDirection: React.FC = () => {
             <p className="qibla-angle">
               {qibla ? `Qibla is ${qibla.toFixed(1)}° from North` : 'Locating Qibla...'}
             </p>
-            {!needsPermission && heading === 0 && permissionGranted && (
+            {!needsPermission && heading === 0 && permissionGranted && hasMotionSensor && (
               <p className="sub-hint">Rotate device to calibrate hardware</p>
             )}
           </>
@@ -212,6 +223,7 @@ const QiblaDirection: React.FC = () => {
           gap: 1.5rem;
           border-color: var(--emerald-medium);
           position: relative;
+          flex: 1;
         }
 
         .label {

@@ -46,8 +46,7 @@ const NavIcon: React.FC<{ name: IconName; size?: number }> = ({ name, size = 20 
                     <path d="M9 3H15" />
                     <path d="M12 3V5.5" />
                     <path d="M7.5 8.5C7.5 6.6 9.6 5 12 5C14.4 5 16.5 6.6 16.5 8.5V15.5C16.5 17.4 14.4 19 12 19C9.6 19 7.5 17.4 7.5 15.5V8.5Z" />
-                    <path d="M9.5 8.5H14.5" />
-                    <path d="M9.5 15.5H14.5" />
+                    <path d="M9 12H15" />
                     <path d="M12 19V21.5" />
                     <path d="M9.5 21.5H14.5" />
                 </svg>

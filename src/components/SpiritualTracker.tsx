@@ -62,29 +62,54 @@ const SpiritualTracker: React.FC = () => {
             />
           </svg>
           <div className="ring-text">
-            <span className="percent">{completionPercentage}%</span>
-            <span className="percent-label">Completed</span>
+            {uniqueAyahsCompleted === 0 ? (
+              <>
+                <span className="percent zero-state">✨</span>
+                <span className="percent-label">Start Today</span>
+              </>
+            ) : (
+              <>
+                <span className="percent">{completionPercentage}%</span>
+                <span className="percent-label">Completed</span>
+              </>
+            )}
           </div>
         </div>
 
         <div className="stats-column">
           <div className="stat-item">
-            <span className="stat-val">{totalAyahsRead}</span>
-            <span className="stat-label">Total Ayahs</span>
+            <span className="stat-val">{totalAyahsRead || '—'}</span>
+            <span className="stat-label">{totalAyahsRead ? 'Total Ayahs' : 'Not Started Yet'}</span>
           </div>
           <div className="stat-item">
-            <span className="stat-val">{currentStreak} <span className="fire-icon">🔥</span></span>
-            <span className="stat-label">Day Streak</span>
+            {currentStreak > 0 ? (
+              <>
+                <span className="stat-val">{currentStreak} <span className="fire-icon">🔥</span></span>
+                <span className="stat-label">Day Streak</span>
+              </>
+            ) : (
+              <>
+                <span className="stat-val">—</span>
+                <span className="stat-label">Start a Streak</span>
+              </>
+            )}
           </div>
         </div>
       </div>
 
       {/* Last Read Section */}
-      {lastRead && (
+      {lastRead ? (
         <div className="last-read-section">
           <span className="last-read-label">Last Read:</span>
           <Link href={`/surah/${lastRead.chapterId}`} className="last-read-link">
             {lastRead.surahName} - {lastRead.verseKey}
+          </Link>
+        </div>
+      ) : (
+        <div className="last-read-section">
+          <span className="last-read-label">Begin your journey today —</span>
+          <Link href="/surahs" className="last-read-link">
+            Read your first Surah
           </Link>
         </div>
       )}
@@ -165,6 +190,10 @@ const SpiritualTracker: React.FC = () => {
                     font-size: 1.1rem;
                     font-weight: 700;
                     color: var(--off-white);
+                }
+
+                .percent.zero-state {
+                    font-size: 1.4rem;
                 }
 
                 .percent-label {
