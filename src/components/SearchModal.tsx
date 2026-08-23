@@ -257,7 +257,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                     font-style: normal;
                 }
 
-                .jump-item {
+                :global(.jump-item) {
                     display: flex;
                     align-items: center;
                     gap: 1rem;
@@ -270,7 +270,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                     transition: background 0.2s;
                 }
 
-                .jump-item:hover {
+                :global(.jump-item:hover) {
                     background: rgba(212, 175, 55, 0.15);
                 }
 
@@ -306,7 +306,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                     color: var(--gold-primary);
                 }
 
-                .result-item {
+                :global(.result-item) {
                     display: block;
                     padding: 1.2rem 1.5rem;
                     text-decoration: none;
@@ -314,7 +314,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                     transition: background 0.2s;
                 }
 
-                .result-item:hover {
+                :global(.result-item:hover) {
                     background: rgba(212, 175, 55, 0.05);
                 }
 

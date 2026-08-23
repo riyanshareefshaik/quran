@@ -355,7 +355,7 @@ export default function Home() {
             margin-bottom: 2rem;
         }
 
-        .read-now-btn {
+        :global(.read-now-btn) {
             display: inline-flex;
             align-items: center;
             gap: 0.9rem;
@@ -372,20 +372,20 @@ export default function Home() {
             box-shadow: 0 12px 35px rgba(212, 175, 55, 0.45);
         }
 
-        .read-now-btn .btn-arrow {
+        :global(.read-now-btn .btn-arrow) {
             transition: transform 0.3s ease;
         }
 
-        .read-now-btn:hover {
+        :global(.read-now-btn:hover) {
             transform: translateY(-3px);
             box-shadow: 0 18px 45px rgba(212, 175, 55, 0.6);
         }
 
-        .read-now-btn:hover .btn-arrow {
+        :global(.read-now-btn:hover .btn-arrow) {
             transform: translateX(4px);
         }
 
-        .read-now-btn:focus-visible {
+        :global(.read-now-btn:focus-visible) {
             outline: 2px solid var(--gold-secondary);
             outline-offset: 3px;
         }

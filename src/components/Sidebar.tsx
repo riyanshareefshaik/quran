@@ -121,7 +121,7 @@ const Sidebar: React.FC = () => {
                     flex: 1;
                 }
 
-                .nav-item {
+                :global(.nav-item) {
                     display: flex;
                     align-items: center;
                     gap: 1rem;
@@ -136,13 +136,13 @@ const Sidebar: React.FC = () => {
                     overflow: hidden;
                 }
 
-                .nav-item:hover {
+                :global(.nav-item:hover) {
                     background: rgba(4, 57, 39, 0.5);
                     border-color: rgba(212, 175, 55, 0.3);
                     color: var(--off-white);
                 }
 
-                .nav-item.active {
+                :global(.nav-item.active) {
                     color: var(--gold-primary);
                     background: rgba(212, 175, 55, 0.12);
                     border-color: var(--gold-primary);
@@ -203,7 +203,7 @@ const Sidebar: React.FC = () => {
                     backdrop-filter: blur(20px);
                 }
 
-                .mobile-tab-item {
+                :global(.mobile-tab-item) {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
@@ -216,11 +216,11 @@ const Sidebar: React.FC = () => {
                     height: 100%;
                 }
 
-                .mobile-tab-item.active {
+                :global(.mobile-tab-item.active) {
                     color: var(--gold-primary);
                 }
 
-                .mobile-tab-item.active .tab-icon {
+                :global(.mobile-tab-item.active .tab-icon) {
                     transform: translateY(-2px);
                 }
 

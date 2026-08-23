@@ -970,7 +970,7 @@ export default function SurahPage() {
             pointer-events: none;
         }
 
-        .back-link {
+        :global(.back-link) {
           color: var(--emerald-light);
           font-size: 0.9rem;
         }
@@ -1216,7 +1216,7 @@ export default function SurahPage() {
           opacity: 0.5;
         }
 
-        .return-index-btn {
+        :global(.return-index-btn) {
           display: flex;
           align-items: center;
           gap: 0.8rem;
@@ -1226,10 +1226,10 @@ export default function SurahPage() {
           font-weight: 600;
           font-size: 1rem;
           transition: all 0.3s ease;
-          border-color: rgba(212, 175, 55, 0.2);
+          border: 1px solid rgba(212, 175, 55, 0.2);
         }
 
-        .return-index-btn:hover {
+        :global(.return-index-btn:hover) {
           background: rgba(212, 175, 55, 0.1);
           border-color: var(--gold-primary);
           color: var(--gold-primary);
@@ -1237,16 +1237,16 @@ export default function SurahPage() {
           box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
 
-        .return-index-btn .icon {
+        :global(.return-index-btn .icon) {
           font-size: 1.2rem;
           transition: transform 0.3s ease;
         }
 
-        .return-index-btn:hover .icon {
+        :global(.return-index-btn:hover .icon) {
           transform: translateX(-5px);
         }
 
-        .return-index-btn:focus-visible {
+        :global(.return-index-btn:focus-visible) {
           outline: 2px solid var(--gold-primary);
           outline-offset: 2px;
         }

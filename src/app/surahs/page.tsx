@@ -105,13 +105,13 @@ export default function SurahsPage() {
             margin-bottom: 2rem;
         }
 
-        .back-link {
+        :global(.back-link) {
             color: var(--emerald-light);
             font-size: 0.9rem;
             transition: color 0.3s;
         }
 
-        .back-link:hover {
+        :global(.back-link:hover) {
             color: var(--gold-primary);
         }
 

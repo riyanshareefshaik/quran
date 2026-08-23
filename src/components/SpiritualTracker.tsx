@@ -220,7 +220,7 @@ const SpiritualTracker: React.FC = () => {
                     flex-shrink: 0;
                 }
 
-                .last-read-link {
+                :global(.last-read-link) {
                     font-size: 0.95rem;
                     color: var(--matte-black);
                     background: var(--gold-primary);
@@ -234,7 +234,7 @@ const SpiritualTracker: React.FC = () => {
                     transition: opacity 0.2s;
                 }
                 
-                .last-read-link:hover {
+                :global(.last-read-link:hover) {
                     opacity: 0.85;
                 }
 

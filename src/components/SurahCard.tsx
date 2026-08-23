@@ -84,7 +84,7 @@ const SurahCard: React.FC<SurahCardProps> = ({
       </div>
 
       <style jsx>{`
-        .surah-card-link {
+        :global(.surah-card-link) {
           text-decoration: none;
           color: inherit;
           display: block;
