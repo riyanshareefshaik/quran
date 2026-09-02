@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import PrayerTimes from '@/components/PrayerTimes';
 import QiblaDirection from '@/components/QiblaDirection';
 import SpiritualTracker from '@/components/SpiritualTracker';
-import { getReligiousCounters } from '@/lib/date-utils';
+import { getReligiousCounters, ReligiousCounters } from '@/lib/prayer-api';
 import PrayerCalendar from '@/components/PrayerCalendar';
 import SearchModal from '@/components/SearchModal';
 import OrnateFrame from '@/components/OrnateFrame';
@@ -15,7 +15,11 @@ import OrnateDivider from '@/components/OrnateDivider';
 export default function Home() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
-  const counters = getReligiousCounters();
+  const [counters, setCounters] = useState<ReligiousCounters | null>(null);
+
+  useEffect(() => {
+    getReligiousCounters().then(setCounters);
+  }, []);
 
   return (
     <div className="container">
@@ -60,22 +64,41 @@ export default function Home() {
               <div className="dash-row">
                 <QiblaDirection />
                 <div className="religious-events-grid">
-                  <div className="ramadan-card glass-card">
-                    <h4 className="label gold-text">{counters.isRamadan ? 'Ramadan' : 'Ramadan Starts'}</h4>
-                    <div className="countdown-val">
-                      {counters.isRamadan ? 'LIVE' : counters.daysToRamadan}
-                    </div>
-                    <p className="days-label">
-                      {counters.isRamadan ? 'Mubarak' : counters.daysToRamadan === 0 ? 'Begins Today' : 'Days'}
-                    </p>
-                    <button className="view-cal-btn" onClick={() => setShowCalendar(true)}>Full Schedule</button>
-                  </div>
-                  <div className="ramadan-card glass-card">
-                    <h4 className="label gold-text">Eid al-Fitr</h4>
-                    <div className="countdown-val">{counters.daysToEidFitr}</div>
-                    <p className="days-label">{counters.daysToEidFitr === 0 ? 'Mubarak' : 'Expected'}</p>
-                    <button className="view-cal-btn" onClick={() => setShowCalendar(true)}>View Dates</button>
-                  </div>
+                  {counters ? (
+                    <>
+                      <div className="ramadan-card glass-card">
+                        <h4 className="label gold-text">{counters.isRamadan ? 'Ramadan' : 'Ramadan Starts'}</h4>
+                        <div className="countdown-val">
+                          {counters.isRamadan ? 'LIVE' : counters.daysToRamadan}
+                        </div>
+                        <p className="days-label">
+                          {counters.isRamadan ? 'Mubarak' : counters.daysToRamadan === 0 ? 'Begins Today' : 'Days'}
+                        </p>
+                        <button className="view-cal-btn" onClick={() => setShowCalendar(true)}>Full Schedule</button>
+                      </div>
+                      <div className="ramadan-card glass-card">
+                        <h4 className="label gold-text">Eid al-Fitr</h4>
+                        <div className="countdown-val">{counters.daysToEidFitr}</div>
+                        <p className="days-label">{counters.daysToEidFitr === 0 ? 'Mubarak' : 'Expected'}</p>
+                        <button className="view-cal-btn" onClick={() => setShowCalendar(true)}>View Dates</button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="ramadan-card glass-card">
+                        <h4 className="label gold-text">Ramadan</h4>
+                        <div className="countdown-val loading-dots">···</div>
+                        <p className="days-label">Calculating</p>
+                        <button className="view-cal-btn" onClick={() => setShowCalendar(true)}>Full Schedule</button>
+                      </div>
+                      <div className="ramadan-card glass-card">
+                        <h4 className="label gold-text">Eid al-Fitr</h4>
+                        <div className="countdown-val loading-dots">···</div>
+                        <p className="days-label">Calculating</p>
+                        <button className="view-cal-btn" onClick={() => setShowCalendar(true)}>View Dates</button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -140,9 +163,11 @@ export default function Home() {
           margin-bottom: 1rem;
         }
 
-        .glow-effect {
+        :global(.glow-effect) {
           filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.4));
           border-radius: 50%;
+          border: 2px solid var(--gold-primary);
+          box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.12);
         }
 
         h1 {

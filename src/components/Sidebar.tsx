@@ -102,8 +102,10 @@ const Sidebar: React.FC = () => {
                     margin-bottom: 3rem;
                 }
 
-                .logo-img {
+                :global(.logo-img) {
                     border-radius: 50%;
+                    border: 2px solid var(--gold-primary);
+                    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.12);
                 }
 
                 .brand-name {

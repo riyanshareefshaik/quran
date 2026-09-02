@@ -36,7 +36,7 @@ const PrayerCalendar: React.FC<PrayerCalendarProps> = ({ onClose }) => {
         <div className="modal-overlay" onClick={onClose}>
             <div className="calendar-modal glass-card" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h3 className="gold-text">Ramadan / Prayer Calendar</h3>
+                    <h3 className="gold-text">Monthly Prayer Schedule</h3>
                     <button className="close-btn" onClick={onClose}>&times;</button>
                 </div>
 
