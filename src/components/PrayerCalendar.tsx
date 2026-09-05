@@ -12,8 +12,12 @@ const PrayerCalendar: React.FC<PrayerCalendarProps> = ({ onClose }) => {
     const [calendar, setCalendar] = useState<PrayerData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [retryKey, setRetryKey] = useState(0);
 
     useEffect(() => {
+        setLoading(true);
+        setError(null);
+
         getCurrentPosition()
             .then(async ({ latitude, longitude }) => {
                 const now = new Date();
@@ -23,14 +27,24 @@ const PrayerCalendar: React.FC<PrayerCalendarProps> = ({ onClose }) => {
                     now.getMonth() + 1,
                     now.getFullYear()
                 );
-                if (data) setCalendar(data);
+                if (data) {
+                    setCalendar(data);
+                } else {
+                    setError('Could not load the prayer schedule. Please try again.');
+                }
                 setLoading(false);
             })
-            .catch(() => {
-                setError('Allow location access to view the prayer calendar.');
+            .catch((err) => {
+                const isPermissionDenied =
+                    typeof err?.message === 'string' && /denied/i.test(err.message);
+                setError(
+                    isPermissionDenied
+                        ? 'Location access was denied. Allow location access in your browser/device settings to view the prayer calendar.'
+                        : 'Could not determine your location in time. This can happen on a slow connection — please try again.'
+                );
                 setLoading(false);
             });
-    }, []);
+    }, [retryKey]);
 
     return (
         <div className="modal-overlay" onClick={onClose}>
@@ -44,7 +58,12 @@ const PrayerCalendar: React.FC<PrayerCalendarProps> = ({ onClose }) => {
                     {loading ? (
                         <div className="loader-center">Calculating timings...</div>
                     ) : error ? (
-                        <div className="loader-center">{error}</div>
+                        <div className="loader-center">
+                            <p>{error}</p>
+                            <button className="retry-btn" onClick={() => setRetryKey((k) => k + 1)}>
+                                Try Again
+                            </button>
+                        </div>
                     ) : (
                         <div className="table-wrapper">
                             <table>
@@ -120,12 +139,32 @@ const PrayerCalendar: React.FC<PrayerCalendarProps> = ({ onClose }) => {
 
                     .table-wrapper {
                         width: 100%;
+                        overflow-x: auto;
+                        -webkit-overflow-scrolling: touch;
                     }
 
                     table {
                         width: 100%;
+                        min-width: 420px;
                         border-collapse: collapse;
                         text-align: left;
+                    }
+
+                    @media (max-width: 480px) {
+                        .calendar-overlay {
+                            padding: 0.75rem;
+                        }
+                        .calendar-modal {
+                            padding: 1.25rem;
+                            max-height: 88vh;
+                        }
+                        .modal-header {
+                            margin-bottom: 1.25rem;
+                        }
+                        th, td {
+                            padding: 0.65rem;
+                            font-size: 0.8rem;
+                        }
                     }
 
                     th {
@@ -157,6 +196,25 @@ const PrayerCalendar: React.FC<PrayerCalendarProps> = ({ onClose }) => {
                         padding: 4rem;
                         text-align: center;
                         color: var(--gold-primary);
+                    }
+
+                    .retry-btn {
+                        margin-top: 1.5rem;
+                        background: rgba(212, 175, 55, 0.1);
+                        border: 1px solid var(--gold-primary);
+                        color: var(--gold-primary);
+                        padding: 0.7rem 1.75rem;
+                        min-height: 44px;
+                        border-radius: 30px;
+                        font-size: 0.9rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                    }
+
+                    .retry-btn:hover {
+                        background: var(--gold-primary);
+                        color: var(--matte-black);
                     }
                 `}</style>
             </div>

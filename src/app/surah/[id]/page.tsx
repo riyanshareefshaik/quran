@@ -25,8 +25,6 @@ interface VerseCardProps {
 
 const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, focusMode, onShare, onPlay, onPlayTranslation, isTranslationPlaying, onStopTranslation, onRead }) => {
   const [showTranslation, setShowTranslation] = useState(!isMemoMode);
-  const [selectedWord, setSelectedWord] = useState<any | null>(null);
-  const [wordDetails, setWordDetails] = useState({ root: '', occurrences: '' });
   const cardRef = React.useRef<HTMLDivElement>(null);
 
   // Auto-track silent reading
@@ -62,21 +60,6 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
     setShowTranslation(!isMemoMode);
   }, [isMemoMode]);
 
-  const handleWordClick = (word: any) => {
-    if (word.char_type_name === 'end') return;
-    setSelectedWord(word);
-    setWordDetails({ root: 'Fetching...', occurrences: 'Fetching...' });
-
-    // Since Quran V4 requires a different complex endpoint for root details,
-    // we gracefully simulate a fetch for the UI demo.
-    setTimeout(() => {
-      setWordDetails({
-        root: 'API Unavailable',
-        occurrences: 'API Unavailable'
-      });
-    }, 1200);
-  };
-
   return (
     <div className="verse-card-container" ref={cardRef}>
       <div className={`glass-card verse-card ${isMemoMode && !showTranslation ? 'memo-active' : ''} ${isBlurred ? 'blurred-verse' : ''} ${focusMode ? 'focus-mode-active' : ''}`}>
@@ -95,23 +78,6 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
           <div className={`arabic-content ${focusMode ? 'centered' : ''}`}>
             <p className="arabic-text main-script">{verse.text_uthmani}</p>
           </div>
-
-          {!focusMode && (
-            <div className="word-by-word-layout">
-              {verse.words?.map((word: any) => (
-                <div
-                  key={word.id}
-                  className={`word-bubble ${word.char_type_name === 'end' ? 'is-end-marker' : ''}`}
-                  onClick={() => handleWordClick(word)}
-                >
-                  <span className="w-arabic">{word.text_uthmani}</span>
-                  {word.char_type_name !== 'end' && (
-                    <span className="w-meaning">{word.translation?.text}</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
 
           {!focusMode && (
             <div className="full-translation-area">
@@ -162,32 +128,6 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
           )}
         </div>
       </div>
-
-      {selectedWord && (
-        <div className="word-modal-overlay" onClick={() => setSelectedWord(null)}>
-          <div className="word-modal-content glass-card" onClick={e => e.stopPropagation()}>
-            <button className="close-word-modal" onClick={() => setSelectedWord(null)}>×</button>
-            <div className="word-modal-header">
-              <h2 className="modal-arabic amiri-text">{selectedWord.text_uthmani || selectedWord.text}</h2>
-              <p className="modal-meaning">{selectedWord.translation?.text || 'No translation'}</p>
-            </div>
-            <div className="word-modal-body">
-              <div className="w-info-row">
-                <span className="w-label">Root Word</span>
-                <span className={`w-val ${wordDetails.root === 'Fetching...' ? 'fetching-anim' : ''}`}>
-                  {wordDetails.root}
-                </span>
-              </div>
-              <div className="w-info-row">
-                <span className="w-label">Occurrences</span>
-                <span className={`w-val ${wordDetails.occurrences === 'Fetching...' ? 'fetching-anim' : ''}`}>
-                  {wordDetails.occurrences}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       <style jsx>{`
         .verse-card-container {
@@ -266,17 +206,6 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
           font-family: 'Amiri', serif;
           color: var(--reading-text, var(--off-white));
           word-spacing: 4px;
-        }
-
-        .word-by-word-layout {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.8rem;
-          direction: rtl;
-          margin-bottom: 1.5rem;
-          padding-bottom: 1rem;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-          justify-content: flex-start;
         }
 
         .full-translation-area {
@@ -497,116 +426,6 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
         .arabic-content.centered .main-script {
             font-size: calc(var(--arabic-font-size, 2.2rem) * 1.5);
             line-height: 2;
-        }
-
-        .word-bubble {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: 0.4rem 0.8rem;
-          border-radius: 12px;
-          background: rgba(255, 255, 255, 0.02);
-          transition: transform 0.2s, background 0.2s;
-          cursor: pointer;
-        }
-
-        .word-bubble.is-end-marker {
-            cursor: default;
-            background: transparent;
-            pointer-events: none;
-        }
-        
-        .word-bubble.is-end-marker:hover {
-            transform: none;
-            background: transparent;
-        }
-
-        .word-bubble.is-end-marker .w-arabic {
-            color: rgba(212, 175, 55, 0.5);
-            font-size: 1.2rem;
-            margin: 0 0.5rem;
-        }
-
-        .word-modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .word-modal-content {
-            width: 320px;
-            padding: 2rem;
-            position: relative;
-            background: rgba(10, 25, 20, 0.95);
-            border: 1px solid var(--emerald-medium);
-            border-radius: 16px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            text-align: center;
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes popIn {
-            0% { transform: scale(0.9); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .close-word-modal {
-            position: absolute;
-            top: 10px; right: 15px;
-            background: none; border: none;
-            color: var(--emerald-light);
-            font-size: 1.5rem; cursor: pointer;
-        }
-
-        .modal-arabic {
-            font-size: 4rem;
-            color: var(--gold-primary);
-            margin: 0 0 1rem 0;
-            line-height: 1.2;
-            text-align: center;
-        }
-
-        .modal-meaning {
-            font-size: 1.2rem;
-            color: var(--off-white);
-            margin: 0 0 1.5rem 0;
-        }
-
-        .word-modal-body {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 1rem;
-            border-radius: 8px;
-        }
-
-        .w-info-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 0.5rem;
-        }
-        .w-info-row:last-child { border-bottom: none; padding-bottom: 0; }
-
-        .w-label { color: var(--emerald-light); font-size: 0.8rem; text-transform: uppercase; }
-        .w-val { color: var(--gold-secondary); font-weight: 600; font-size: 0.9rem; }
-
-        .fetching-anim {
-            animation: pulseText 1.5s infinite;
-            opacity: 0.7;
-        }
-
-        @keyframes pulseText {
-            0% { opacity: 0.4; }
-            50% { opacity: 1; }
-            100% { opacity: 0.4; }
         }
 
         .opacity-50 { opacity: 0.5; }
@@ -988,6 +807,8 @@ export default function SurahPage() {
             display: flex;
             align-items: center;
             gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .settings-wrapper {
@@ -1033,6 +854,13 @@ export default function SurahPage() {
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
             border-radius: 12px;
             z-index: 200;
+        }
+
+        @media (max-width: 400px) {
+            .reading-settings-popover {
+                width: calc(100vw - 2rem);
+                right: -1rem;
+            }
         }
 
         .setting-row {
@@ -1274,6 +1102,9 @@ export default function SurahPage() {
         }
 
         @media (max-width: 768px) {
+          .surah-container {
+            padding: 1.25rem;
+          }
           .surah-header {
             flex-direction: column;
             gap: 1rem;

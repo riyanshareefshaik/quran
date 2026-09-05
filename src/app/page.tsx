@@ -113,7 +113,7 @@ export default function Home() {
           <div className="hero-card glass-card">
             <div className="hero-content">
               <h2 className="gold-text font-display">The Complete Revelation</h2>
-              <p className="hero-desc">Explore all 114 Surahs, beautifully formatted with word-by-word translations, interactive memorization modes, and immersive audio recitation.</p>
+              <p className="hero-desc">Explore all 114 Surahs, beautifully formatted with authentic translations, interactive memorization modes, and immersive audio recitation.</p>
               <Link href="/surahs" className="read-now-btn">
                 <span>Enter the Quran</span>
                 <span className="btn-arrow">→</span>
@@ -243,6 +243,12 @@ export default function Home() {
           align-items: stretch;
         }
 
+        @media (max-width: 900px) {
+          .dashboard-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
         .book-spine {
           width: 1px;
           background: linear-gradient(
@@ -291,11 +297,23 @@ export default function Home() {
           gap: 1.5rem;
         }
 
+        @media (max-width: 640px) {
+          .dash-row {
+            flex-direction: column;
+          }
+        }
+
         .religious-events-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 1.5rem;
           flex: 1;
+        }
+
+        @media (max-width: 420px) {
+          .religious-events-grid {
+            grid-template-columns: 1fr;
+          }
         }
 
         .ramadan-card {

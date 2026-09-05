@@ -135,6 +135,21 @@ const AudioPlayer: React.FC = () => {
           transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
+        @media (max-width: 768px) {
+          .audio-player-wrapper {
+            /* Sit above the 70px mobile bottom tab bar instead of
+               overlapping it. */
+            bottom: calc(70px + 1rem);
+            width: 94%;
+          }
+        }
+
+        @media (max-width: 420px) {
+          .audio-container {
+            padding: 0.75rem 1rem !important;
+          }
+        }
+
         .audio-container {
           padding: 1rem 1.5rem;
           display: flex;

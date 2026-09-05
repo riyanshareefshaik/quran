@@ -226,6 +226,16 @@ const QiblaDirection: React.FC = () => {
           flex: 1;
         }
 
+        @media (max-width: 380px) {
+          .qibla-widget {
+            padding: 1.25rem;
+          }
+          .compass-container {
+            width: 160px !important;
+            height: 160px !important;
+          }
+        }
+
         .label {
           font-size: 0.85rem;
           text-transform: uppercase;

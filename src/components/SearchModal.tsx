@@ -185,6 +185,18 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
                 }
 
+                @media (max-width: 480px) {
+                    .search-modal-overlay {
+                        padding-top: 4vh;
+                    }
+                    .search-header {
+                        padding: 1rem;
+                    }
+                    .search-input {
+                        font-size: 1rem;
+                    }
+                }
+
                 .search-input {
                     flex: 1;
                     background: transparent;

@@ -154,6 +154,7 @@ const SpiritualTracker: React.FC = () => {
                     align-items: center;
                     justify-content: space-around;
                     gap: 1.5rem;
+                    flex-wrap: wrap;
                 }
 
                 .completion-ring-container {
