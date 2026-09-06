@@ -634,8 +634,15 @@ export default function SurahPage() {
         </div>
         <div className="header-right">
           <div className="settings-wrapper">
-            <button className="settings-toggle-btn" onClick={() => setShowSettings(!showSettings)}>
-              ⚙️
+            <button className="settings-toggle-btn" onClick={() => setShowSettings(!showSettings)} aria-label="Reading settings">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="4" y1="7" x2="20" y2="7" />
+                <circle cx="9" cy="7" r="2.2" fill="currentColor" stroke="none" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <circle cx="15" cy="12" r="2.2" fill="currentColor" stroke="none" />
+                <line x1="4" y1="17" x2="20" y2="17" />
+                <circle cx="11" cy="17" r="2.2" fill="currentColor" stroke="none" />
+              </svg>
             </button>
             {showSettings && (
               <div className="reading-settings-popover glass-card">
@@ -674,8 +681,11 @@ export default function SurahPage() {
               </div>
             )}
           </div>
-          <button className={`memo-toggle ${focusMode ? 'active' : ''}`} onClick={toggleFocusMode} title="Focus Mode">
-            👁️
+          <button className={`memo-toggle icon-only-toggle ${focusMode ? 'active' : ''}`} onClick={toggleFocusMode} title="Focus Mode" aria-label="Toggle focus mode">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 12C4.5 6.5 8 4 12 4C16 4 19.5 6.5 22 12C19.5 17.5 16 20 12 20C8 20 4.5 17.5 2 12Z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
           </button>
           <button className={`memo-toggle ${memoMode ? 'active' : ''}`} onClick={() => setMemoMode(!memoMode)}>
             {memoMode ? 'EXIT MEMO' : 'MEMO MODE'}
@@ -856,10 +866,16 @@ export default function SurahPage() {
             z-index: 200;
         }
 
-        @media (max-width: 400px) {
+        @media (max-width: 640px) {
             .reading-settings-popover {
-                width: calc(100vw - 2rem);
-                right: -1rem;
+                position: fixed;
+                top: auto;
+                bottom: calc(70px + 1rem);
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+                width: calc(100vw - 2.5rem);
+                max-width: 340px;
             }
         }
 
@@ -985,6 +1001,21 @@ export default function SurahPage() {
             color: var(--gold-primary);
             border-color: var(--gold-primary);
             box-shadow: 0 0 10px var(--gold-glow);
+        }
+
+        .memo-toggle.icon-only-toggle {
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .memo-toggle.icon-only-toggle:hover {
+            border-color: var(--gold-primary);
+            background: rgba(212, 175, 55, 0.1);
         }
 
         .show-next-btn {
