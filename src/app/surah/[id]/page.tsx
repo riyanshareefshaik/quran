@@ -645,7 +645,9 @@ export default function SurahPage() {
               </svg>
             </button>
             {showSettings && (
-              <div className="reading-settings-popover glass-card">
+              <>
+                <div className="settings-backdrop" onClick={() => setShowSettings(false)} />
+                <div className="reading-settings-popover glass-card">
                 <div className="setting-row">
                   <span className="setting-label">Arabic Font Size</span>
                   <div className="size-toggles">
@@ -678,7 +680,8 @@ export default function SurahPage() {
                     <div className="toggle-thumb" />
                   </button>
                 </div>
-              </div>
+                </div>
+              </>
             )}
           </div>
           <button className={`memo-toggle icon-only-toggle ${focusMode ? 'active' : ''}`} onClick={toggleFocusMode} title="Focus Mode" aria-label="Toggle focus mode">
@@ -864,6 +867,21 @@ export default function SurahPage() {
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
             border-radius: 12px;
             z-index: 200;
+        }
+
+        .settings-backdrop {
+            display: none;
+        }
+
+        @media (max-width: 640px) {
+            .settings-backdrop {
+                display: block;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(3px);
+                z-index: 199;
+            }
         }
 
         @media (max-width: 640px) {
