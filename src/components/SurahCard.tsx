@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAudio } from '@/context/AudioContext';
 import { useBookmarks } from '@/context/BookmarkContext';
+import { fetchChapterRecitation } from '@/lib/quran-api';
 
 interface SurahCardProps {
   id: number;
@@ -20,8 +21,9 @@ const SurahCard: React.FC<SurahCardProps> = ({
   versesCount,
   translatedName,
 }) => {
-  const { playChapter, isPlaying, currentChapterId } = useAudio();
+  const { playChapter, isPlaying, currentChapterId, currentReciterId } = useAudio();
   const { isBookmarked, toggleBookmark } = useBookmarks();
+  const [downloadState, setDownloadState] = useState<'idle' | 'downloading' | 'done' | 'error'>('idle');
 
   const handlePlay = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -33,6 +35,40 @@ const SurahCard: React.FC<SurahCardProps> = ({
     e.preventDefault();
     e.stopPropagation();
     toggleBookmark(id, name);
+  };
+
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (downloadState === 'downloading') return;
+
+    setDownloadState('downloading');
+    try {
+      const audioUrl = await fetchChapterRecitation(id, currentReciterId);
+      if (!audioUrl) throw new Error('No audio URL returned');
+
+      // Fetch as a blob so the browser downloads the file directly instead
+      // of navigating to/streaming the audio CDN URL in-page.
+      const res = await fetch(audioUrl);
+      if (!res.ok) throw new Error('Failed to fetch audio file');
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = `${String(id).padStart(3, '0')}-${name.replace(/\s+/g, '-')}.mp3`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(objectUrl);
+
+      setDownloadState('done');
+      setTimeout(() => setDownloadState('idle'), 2500);
+    } catch (error) {
+      console.error('Download failed:', error);
+      setDownloadState('error');
+      setTimeout(() => setDownloadState('idle'), 2500);
+    }
   };
 
   const isCurrentPlaying = isPlaying && currentChapterId === id;
@@ -59,7 +95,11 @@ const SurahCard: React.FC<SurahCardProps> = ({
         <div className="surah-actions-overlay">
           <div className="action-item">
             <button className="action-btn play-action" onClick={handlePlay} title="Play Surah">
-              {isCurrentPlaying ? '||' : '▶'}
+              {isCurrentPlaying ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z" /></svg>
+              )}
             </button>
             <span className="action-label">{isCurrentPlaying ? 'Pause' : 'Play'}</span>
           </div>
@@ -70,15 +110,32 @@ const SurahCard: React.FC<SurahCardProps> = ({
               title={bookmarked ? 'Remove Bookmark' : 'Bookmark'}
               aria-pressed={bookmarked}
             >
-              {bookmarked ? '★' : '🔖'}
+              <svg width="17" height="17" viewBox="0 0 24 24" fill={bookmarked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
+                <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1Z" />
+              </svg>
             </button>
             <span className="action-label">{bookmarked ? 'Saved' : 'Bookmark'}</span>
           </div>
           <div className="action-item">
-            <button className="action-btn" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} title="Download">
-              📥
+            <button
+              className={`action-btn ${downloadState === 'error' ? 'download-error' : ''}`}
+              onClick={handleDownload}
+              title="Download audio"
+              disabled={downloadState === 'downloading'}
+            >
+              {downloadState === 'downloading' ? (
+                <svg className="spin-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 3a9 9 0 1 0 9 9" /></svg>
+              ) : downloadState === 'done' ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+              ) : downloadState === 'error' ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+              ) : (
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 19h14" /></svg>
+              )}
             </button>
-            <span className="action-label">Download</span>
+            <span className="action-label">
+              {downloadState === 'downloading' ? 'Downloading…' : downloadState === 'done' ? 'Saved!' : downloadState === 'error' ? 'Failed' : 'Download'}
+            </span>
           </div>
         </div>
       </div>
@@ -288,6 +345,25 @@ const SurahCard: React.FC<SurahCardProps> = ({
           color: var(--matte-black);
           border-color: var(--gold-primary);
           transform: scale(1.1) !important;
+        }
+
+        .action-btn:disabled {
+          cursor: not-allowed;
+          opacity: 0.8;
+        }
+
+        .action-btn.download-error {
+          border-color: #ff6b6b;
+          color: #ff6b6b;
+        }
+
+        .spin-icon {
+          animation: spin 0.9s linear infinite;
+        }
+
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
 
         .play-action {

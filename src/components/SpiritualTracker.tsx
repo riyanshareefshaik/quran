@@ -119,11 +119,15 @@ const SpiritualTracker: React.FC = () => {
         <span className="chart-title">Last 7 Days</span>
         <div className="bars-container">
           {weeklyData.map((data, idx) => {
-            const heightPercent = Math.min((data.count / maxWeeklyCount) * 100, 100);
+            const heightPercent = Math.max(Math.min((data.count / maxWeeklyCount) * 100, 100), 4);
+            const hasActivity = data.count > 0;
             return (
               <div key={idx} className="bar-wrapper" title={`${data.count} ayahs`}>
                 <div className="bar-bg">
-                  <div className="bar-fill" style={{ height: `${heightPercent}%` }}></div>
+                  <div
+                    className={`bar-fill ${hasActivity ? '' : 'bar-fill-empty'}`}
+                    style={{ height: `${heightPercent}%` }}
+                  ></div>
                 </div>
                 <span className="day-label">{data.dayName.charAt(0)}</span>
               </div>
@@ -308,8 +312,12 @@ const SpiritualTracker: React.FC = () => {
                 .bar-fill {
                     width: 100%;
                     background: linear-gradient(0deg, var(--emerald-medium), var(--gold-primary));
-                    border-radius: 4px;
+                    border-radius: 4px 4px 0 0;
                     transition: height 0.8s ease-out;
+                }
+
+                .bar-fill-empty {
+                    background: rgba(255, 255, 255, 0.08);
                 }
 
                 .day-label {

@@ -76,7 +76,13 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
 
         <div className="verse-body">
           <div className={`arabic-content ${focusMode ? 'centered' : ''}`}>
-            <p className="arabic-text main-script">{verse.text_uthmani}</p>
+            <p
+              className="arabic-text main-script tappable-verse"
+              onClick={() => onPlay(verse)}
+              title="Tap to play this verse"
+            >
+              {verse.text_uthmani}
+            </p>
           </div>
 
           {!focusMode && (
@@ -206,6 +212,21 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
           font-family: 'Amiri', serif;
           color: var(--reading-text, var(--off-white));
           word-spacing: 4px;
+        }
+
+        .tappable-verse {
+          cursor: pointer;
+          transition: color 0.2s ease, text-shadow 0.2s ease;
+          border-radius: 8px;
+        }
+
+        .tappable-verse:hover {
+          color: var(--gold-primary);
+          text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .tappable-verse:active {
+          opacity: 0.75;
         }
 
         .full-translation-area {

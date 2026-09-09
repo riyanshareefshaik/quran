@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { fetchChapters, Chapter } from '@/lib/quran-api';
+import { useBookmarks } from '@/context/BookmarkContext';
 import SurahList from '@/components/SurahList';
 import SearchModal from '@/components/SearchModal';
 import OrnateFrame from '@/components/OrnateFrame';
@@ -13,6 +14,8 @@ export default function SurahsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const [showSearchModal, setShowSearchModal] = useState(false);
+    const [bookmarkedOnly, setBookmarkedOnly] = useState(false);
+    const { bookmarks } = useBookmarks();
 
     useEffect(() => {
         async function loadChapters() {
@@ -23,12 +26,16 @@ export default function SurahsPage() {
         loadChapters();
     }, []);
 
-    const filteredChapters = chapters.filter(
-        (chapter: Chapter) =>
-            chapter.name_complex.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            chapter.translated_name.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            chapter.id.toString().includes(searchTerm)
-    );
+    const bookmarkedIds = new Set(bookmarks.map((b) => b.chapterId));
+
+    const filteredChapters = chapters
+        .filter(
+            (chapter: Chapter) =>
+                chapter.name_complex.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                chapter.translated_name.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                chapter.id.toString().includes(searchTerm)
+        )
+        .filter((chapter: Chapter) => !bookmarkedOnly || bookmarkedIds.has(chapter.id));
 
     return (
         <div className="container">
@@ -62,7 +69,23 @@ export default function SurahsPage() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="search-input glass-card"
                         />
+                        <button
+                            className={`bookmark-filter-btn ${bookmarkedOnly ? 'active' : ''}`}
+                            onClick={() => setBookmarkedOnly(!bookmarkedOnly)}
+                            aria-pressed={bookmarkedOnly}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill={bookmarkedOnly ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
+                                <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1Z" />
+                            </svg>
+                            {bookmarkedOnly ? 'Showing Bookmarks' : `Bookmarked${bookmarks.length ? ` (${bookmarks.length})` : ''}`}
+                        </button>
                     </div>
+
+                    {bookmarkedOnly && filteredChapters.length === 0 && (
+                        <p className="empty-bookmarks-note">
+                            No bookmarked Surahs yet — tap the bookmark icon on any Surah card to save it here.
+                        </p>
+                    )}
 
                     {loading ? (
                         <div className="loading-container">
@@ -156,10 +179,47 @@ export default function SurahsPage() {
         }
 
         .filter-container {
-            margin-bottom: 2.5rem;
-            max-width: 500px;
+            margin-bottom: 1.5rem;
+            max-width: 600px;
             margin-left: auto;
             margin-right: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .bookmark-filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: transparent;
+            border: 1px solid var(--emerald-medium);
+            color: var(--emerald-light);
+            padding: 0.5rem 1.1rem;
+            min-height: 40px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .bookmark-filter-btn:hover {
+            border-color: var(--gold-primary);
+            color: var(--gold-primary);
+        }
+
+        .bookmark-filter-btn.active {
+            background: rgba(212, 175, 55, 0.12);
+            border-color: var(--gold-primary);
+            color: var(--gold-primary);
+        }
+
+        .empty-bookmarks-note {
+            text-align: center;
+            color: var(--emerald-light);
+            padding: 2rem;
+            font-style: italic;
         }
 
         .search-input {
