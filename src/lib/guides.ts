@@ -1,9 +1,10 @@
 // Content for the Ramadan, Hajj and Umrah guidance pages.
 //
 // Accuracy notes for anyone editing this file:
-// - Every ruling here reflects the mainstream position shared by the four
-//   Sunni schools. Where the schools differ, the text says so instead of
-//   picking one — do not "simplify" those notes away.
+// - Every ruling here reflects the position held by the majority of Muslim
+//   scholars. Where scholars differ, the text says so instead of picking
+//   one — do not "simplify" those notes away.
+// - Never label content by sect or school; this app speaks to all Muslims.
 // - Every Quran reference is surah:ayah. Hadith are cited by collection and
 //   narrator (not by number, since numbering differs between editions).
 // - Arabic duas are copied from the cited sources; check any change against
@@ -197,7 +198,7 @@ export const GUIDES: Record<GuideSlug, Guide> = {
                     { title: 'Amount', detail: 'One ṣāʿ (about 2.5–3 kg) of a staple food — such as dates, barley, rice or wheat — per person.' },
                     { title: 'Timing', detail: 'Must be given before the Eid prayer. It may be given a day or two before Eid.' },
                 ],
-                notes: ['Most scholars require it to be given as food; the Hanafi school permits its cash value. Many local mosques announce the amount in your currency.'],
+                notes: ['Most scholars require it to be given as food, while others permit giving its cash value. Many local mosques announce the amount in your currency.'],
                 sources: ['Sahih al-Bukhari & Sahih Muslim (Ibn ʿUmar): the Messenger of Allah ﷺ made Zakat al-Fitr obligatory — a ṣāʿ of dates or a ṣāʿ of barley — on every Muslim, and ordered it be paid before people go out to the prayer.'],
             },
             {
@@ -231,7 +232,7 @@ export const GUIDES: Record<GuideSlug, Guide> = {
         title: 'Umrah',
         arabicTitle: 'الْعُمْرَة',
         subtitle: 'Step-by-step guide to the lesser pilgrimage',
-        intro: 'Umrah can be performed at any time of the year. It consists of four acts: entering Ihram, Tawaf around the Kaʿbah, Saʿi between Safa and Marwah, and shaving or shortening the hair. The schools classify these slightly differently (pillar vs. obligation), but all four are performed by everyone.',
+        intro: 'Umrah can be performed at any time of the year. It consists of four acts: entering Ihram, Tawaf around the Kaʿbah, Saʿi between Safa and Marwah, and shaving or shortening the hair. Scholars classify these slightly differently (pillar vs. obligation), but all four are performed by every pilgrim.',
         keyVerse: {
             arabic: 'وَأَتِمُّوا الْحَجَّ وَالْعُمْرَةَ لِلَّهِ',
             translation: 'And complete the Hajj and Umrah for Allah.',
@@ -508,4 +509,4 @@ export const GUIDES: Record<GuideSlug, Guide> = {
 export const GUIDE_ORDER: GuideSlug[] = ['ramadan', 'umrah', 'hajj'];
 
 export const GUIDE_DISCLAIMER =
-    'This guide summarises mainstream Sunni practice with references to the Quran and authentic hadith. Details differ between the four schools of fiqh. It is not a substitute for learning from a qualified scholar — please verify rulings that apply to your situation, and follow the instructions of the Saudi authorities and your group leader during Hajj and Umrah.';
+    'This guide summarises Islamic practice as held by the majority of scholars, with references to the Quran and authentic hadith. Some details differ between scholars. It is not a substitute for learning from a qualified scholar — please verify rulings that apply to your situation, and follow the instructions of the Saudi authorities and your group leader during Hajj and Umrah.';

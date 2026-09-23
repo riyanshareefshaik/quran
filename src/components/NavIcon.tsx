@@ -1,6 +1,6 @@
 import React from 'react';
 
-type IconName = 'dashboard' | 'quran' | 'essentials' | 'guides';
+type IconName = 'dashboard' | 'quran' | 'hadith' | 'essentials' | 'guides';
 
 /**
  * Uniform, hand-drawn line icons for primary navigation — replaces raw
@@ -49,6 +49,17 @@ const NavIcon: React.FC<{ name: IconName; size?: number }> = ({ name, size = 20 
                     <path d="M9 12H15" />
                     <path d="M12 19V21.5" />
                     <path d="M9.5 21.5H14.5" />
+                </svg>
+            );
+        // Scroll, for the hadith collections.
+        case 'hadith':
+            return (
+                <svg {...common}>
+                    <path d="M7 4H17C18.1 4 19 4.9 19 6V18C19 19.7 17.7 21 16 21H6" />
+                    <path d="M7 4C5.9 4 5 4.9 5 6V8H9V6C9 4.9 8.1 4 7 4Z" />
+                    <path d="M9 7V18C9 19.7 7.7 21 6 21C4.3 21 3 19.7 3 18V17H13V18C13 19.7 14.3 21 16 21" />
+                    <path d="M12 9H16" />
+                    <path d="M12 12.5H16" />
                 </svg>
             );
         // Crescent and star, for the Ramadan/Hajj/Umrah guides.
