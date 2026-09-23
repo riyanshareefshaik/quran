@@ -1,19 +1,19 @@
--- Nur Al-Quran — Supabase schema for the admin dashboard.
+-- Nur Al-Quran - Supabase schema for the admin dashboard.
 --
--- Run this whole file once in the Supabase dashboard → SQL Editor → New query.
+-- Run this whole file once in the Supabase dashboard -> SQL Editor -> New query.
 -- It is safe to re-run: every statement is idempotent.
 --
 -- Security model: the web app only ever holds the public "anon" key. Every
 -- permission below is enforced by Postgres row-level security (RLS), so the
 -- public key can do nothing except:
---   • read currently-active announcements
---   • submit feedback and content-issue reports (length-checked)
---   • increment an anonymous page-view counter
+--   * read currently-active announcements
+--   * submit feedback and content-issue reports (length-checked)
+--   * increment an anonymous page-view counter
 -- Everything else requires a signed-in user listed in public.admins.
 
 create extension if not exists pgcrypto;
 
--- ── Admins ──────────────────────────────────────────────────────────────
+-- -- Admins --------------------------------------------------------------
 create table if not exists public.admins (
     user_id    uuid primary key references auth.users (id) on delete cascade,
     email      text not null,
@@ -53,7 +53,7 @@ begin
     end if;
     select * into v_user from auth.users where lower(email) = lower(trim(p_email)) limit 1;
     if not found then
-        raise exception 'No user with that email. Create the user in Supabase → Authentication first.';
+        raise exception 'No user with that email. Create the user in Supabase -> Authentication first.';
     end if;
     insert into public.admins (user_id, email) values (v_user.id, v_user.email)
     on conflict (user_id) do nothing;
@@ -81,7 +81,7 @@ $$;
 revoke all on function public.remove_admin(uuid) from public;
 grant execute on function public.remove_admin(uuid) to authenticated;
 
--- ── Shared trigger: keep updated_at current ─────────────────────────────
+-- -- Shared trigger: keep updated_at current -----------------------------
 create or replace function public.touch_updated_at()
 returns trigger
 language plpgsql
@@ -92,7 +92,7 @@ begin
 end;
 $$;
 
--- ── Announcements (shown as a banner on the home page) ──────────────────
+-- -- Announcements (shown as a banner on the home page) ------------------
 create table if not exists public.announcements (
     id         uuid primary key default gen_random_uuid(),
     title      text not null check (char_length(title) between 1 and 120),
@@ -122,7 +122,7 @@ drop policy if exists "admins manage announcements" on public.announcements;
 create policy "admins manage announcements" on public.announcements
     for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
--- ── Feedback from app users ─────────────────────────────────────────────
+-- -- Feedback from app users ---------------------------------------------
 create table if not exists public.feedback (
     id         uuid primary key default gen_random_uuid(),
     name       text check (name is null or char_length(name) <= 100),
@@ -149,7 +149,7 @@ drop policy if exists "admins manage feedback" on public.feedback;
 create policy "admins manage feedback" on public.feedback
     for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
--- ── Reports of mistakes in Quran / hadith / dua / guide content ─────────
+-- -- Reports of mistakes in Quran / hadith / dua / guide content ---------
 create table if not exists public.content_reports (
     id           uuid primary key default gen_random_uuid(),
     content_type text not null check (content_type in ('quran', 'hadith', 'essential', 'guide', 'other')),
@@ -176,7 +176,7 @@ drop policy if exists "admins manage reports" on public.content_reports;
 create policy "admins manage reports" on public.content_reports
     for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
--- ── Anonymous page-view counts (no IPs, no user ids, no cookies) ────────
+-- -- Anonymous page-view counts (no IPs, no user ids, no cookies) --------
 create table if not exists public.page_views (
     day   date not null default current_date,
     path  text not null,
@@ -206,20 +206,20 @@ $$;
 revoke all on function public.track_page_view(text) from public;
 grant execute on function public.track_page_view(text) to anon, authenticated;
 
--- ── Table privileges (RLS above still decides which rows) ───────────────
+-- -- Table privileges (RLS above still decides which rows) ---------------
 grant usage on schema public to anon, authenticated;
 grant select on public.announcements to anon, authenticated;
 grant insert on public.feedback, public.content_reports to anon, authenticated;
 grant select, insert, update, delete on public.announcements, public.feedback, public.content_reports to authenticated;
 grant select on public.admins, public.page_views to authenticated;
 
--- ── Indexes for the dashboard lists ─────────────────────────────────────
+-- -- Indexes for the dashboard lists -------------------------------------
 create index if not exists feedback_status_created on public.feedback (status, created_at desc);
 create index if not exists reports_status_created on public.content_reports (status, created_at desc);
 create index if not exists announcements_live on public.announcements (is_active, starts_at);
 
--- ── First admin ─────────────────────────────────────────────────────────
--- 1. Supabase → Authentication → Users → "Add user" (email + password).
+-- -- First admin ---------------------------------------------------------
+-- 1. Supabase -> Authentication -> Users -> "Add user" (email + password).
 -- 2. Then run (with your email):
 --
 --    insert into public.admins (user_id, email)
