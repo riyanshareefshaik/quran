@@ -54,6 +54,20 @@ const Sidebar: React.FC = () => {
                 </nav>
 
                 <div className="sidebar-footer">
+                    <Link href="/account" className={`account-link ${pathname.startsWith('/account') ? 'active' : ''}`}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
+                            <circle cx="12" cy="8" r="4" />
+                            <path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" />
+                        </svg>
+                        My Account
+                    </Link>
+                    <nav className="footer-links" aria-label="More">
+                        <Link href="/feedback">Feedback</Link>
+                        <span aria-hidden="true">·</span>
+                        <Link href="/privacy">Privacy</Link>
+                        <span aria-hidden="true">·</span>
+                        <Link href="/terms">Terms</Link>
+                    </nav>
                     <p className="version-info">v2.0 Beta</p>
                 </div>
             </aside>
@@ -178,6 +192,38 @@ const Sidebar: React.FC = () => {
                 .sidebar-footer {
                     padding: 1rem 2rem;
                     text-align: center;
+                }
+
+                .sidebar-footer :global(.account-link) {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.5rem;
+                    margin-bottom: 0.75rem;
+                    padding: 0.55rem 1rem;
+                    border-radius: 10px;
+                    border: 1px solid rgba(212, 175, 55, 0.25);
+                    color: var(--gold-primary);
+                    font-size: 0.85rem;
+                }
+
+                .sidebar-footer :global(.account-link:hover),
+                .sidebar-footer :global(.account-link.active) {
+                    background: rgba(212, 175, 55, 0.1);
+                    border-color: var(--gold-primary);
+                }
+
+                .footer-links {
+                    display: flex;
+                    justify-content: center;
+                    gap: 0.5rem;
+                    font-size: 0.8rem;
+                    color: var(--emerald-light);
+                    margin-bottom: 0.4rem;
+                }
+
+                .footer-links :global(a:hover) {
+                    color: var(--gold-primary);
                 }
 
                 .version-info {

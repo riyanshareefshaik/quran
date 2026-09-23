@@ -5,8 +5,10 @@ import { AudioProvider } from "@/context/AudioContext";
 import { SettingsProvider } from "@/context/SettingsContext";
 import { ProgressProvider } from "@/context/ProgressContext";
 import { BookmarkProvider } from "@/context/BookmarkContext";
+import { AuthProvider } from "@/context/AuthContext";
 import Sidebar from "@/components/Sidebar";
 import AudioPlayer from "@/components/AudioPlayer";
+import PageViewTracker from "@/components/PageViewTracker";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -55,18 +57,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="dark" className={`${inter.variable} ${amiri.variable} ${cinzel.variable}`}>
+    <html lang="en" data-theme="dark" data-scroll-behavior="smooth" className={`${inter.variable} ${amiri.variable} ${cinzel.variable}`}>
       <body className="islamic-pattern" suppressHydrationWarning>
         <SettingsProvider>
           <ProgressProvider>
             <BookmarkProvider>
+              <AuthProvider>
               <AudioProvider>
                 <Sidebar />
                 <div className="main-layout-content">
                   {children}
                 </div>
                 <AudioPlayer />
+                <PageViewTracker />
               </AudioProvider>
+              </AuthProvider>
             </BookmarkProvider>
           </ProgressProvider>
         </SettingsProvider>

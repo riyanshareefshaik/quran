@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import OrnateFrame from '@/components/OrnateFrame';
 import OrnateDivider from '@/components/OrnateDivider';
+import ReportIssueButton from '@/components/ReportIssueButton';
 import {
     HADITH_COLLECTIONS,
     LANGUAGE_NAMES,
@@ -216,7 +217,10 @@ const HadithCard: React.FC<{ hadith: Hadith; collection: HadithCollection; highl
         <article id={`hadith-${hadith.number}`} className={`hadith-card ${highlighted ? 'highlighted' : ''}`}>
             <header className="hadith-header">
                 <span className="hadith-number">{collection.name} · {hadith.number}</span>
-                <button type="button" className="copy-btn" onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
+                <span className="hadith-actions">
+                    <ReportIssueButton contentType="hadith" contentRef={`${collection.name} ${hadith.number}`} />
+                    <button type="button" className="copy-btn" onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
+                </span>
             </header>
             {showArabic && hadith.arabic && <p className="hadith-arabic amiri-text" dir="rtl" lang="ar">{hadith.arabic}</p>}
             {hadith.text && <p className="hadith-text" dir={rtl ? 'rtl' : 'ltr'}>{hadith.text}</p>}
@@ -247,6 +251,7 @@ const HadithCard: React.FC<{ hadith: Hadith; collection: HadithCollection; highl
                     box-shadow: 0 0 0 1px var(--gold-primary), 0 6px 24px rgba(212, 175, 55, 0.18);
                 }
                 .hadith-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+                .hadith-actions { display: flex; gap: 0.5rem; align-items: center; }
                 .hadith-number { font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; color: var(--gold-primary); font-weight: 600; }
                 .copy-btn {
                     background: transparent; border: 1px solid var(--emerald-medium); color: var(--emerald-light);

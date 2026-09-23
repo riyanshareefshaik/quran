@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import OrnateFrame from '@/components/OrnateFrame';
 import OrnateDivider from '@/components/OrnateDivider';
+import ReportIssueButton from '@/components/ReportIssueButton';
 import { ESSENTIALS, ESSENTIAL_CATEGORIES, EssentialCategory } from '@/lib/essentials';
 
 export default function EssentialsPage() {
@@ -93,11 +94,14 @@ export default function EssentialsPage() {
                                     <div className="essential-description">
                                         <p>{item.description}</p>
                                         <p className="essential-source">Source: {item.source}</p>
-                                        {item.verseKey && (
-                                            <Link href={`/surah/${item.verseKey.split(':')[0]}`} className="context-link">
-                                                View in Quran →
-                                            </Link>
-                                        )}
+                                        <div className="essential-links">
+                                            {item.verseKey && (
+                                                <Link href={`/surah/${item.verseKey.split(':')[0]}`} className="context-link">
+                                                    View in Quran →
+                                                </Link>
+                                            )}
+                                            <ReportIssueButton contentType="essential" contentRef={item.title} label="Report a mistake" />
+                                        </div>
                                     </div>
 
                                     <div className="essential-segments">
@@ -263,8 +267,11 @@ export default function EssentialsPage() {
                     color: rgba(255, 255, 255, 0.55);
                 }
 
-                .essential-description :global(.context-link) {
-                    display: inline-block;
+                .essential-links {
+                    display: flex;
+                    flex-wrap: wrap;
+                    align-items: center;
+                    gap: 0.75rem;
                     margin-top: 0.8rem;
                 }
 

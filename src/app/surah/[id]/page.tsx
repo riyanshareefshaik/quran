@@ -10,6 +10,7 @@ import { useProgress } from '@/context/ProgressContext';
 import { useSettings, FontSize } from '@/context/SettingsContext';
 import AyahShareModal from '@/components/AyahShareModal';
 import OrnateDivider from '@/components/OrnateDivider';
+import ReportIssueButton from '@/components/ReportIssueButton';
 
 interface VerseCardProps {
   verse: Verse;
@@ -68,6 +69,7 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
             <div className="verse-actions">
               <button className="premium-icon-btn" onClick={() => onPlay(verse)}>Play</button>
               <button className="premium-icon-btn" onClick={() => onShare(verse)}>Share</button>
+              <span className="report-slot"><ReportIssueButton contentType="quran" contentRef={`Quran ${verse.verse_key}`} /></span>
             </div>
           </div>
         )}
@@ -171,6 +173,11 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
           border-color: var(--gold-primary);
           color: var(--gold-primary);
           background: rgba(212, 175, 55, 0.1);
+        }
+
+        .report-slot {
+          display: inline-block;
+          margin-left: 0.6rem;
         }
 
         .premium-icon-btn:focus-visible {
