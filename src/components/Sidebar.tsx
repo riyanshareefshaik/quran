@@ -14,6 +14,7 @@ const Sidebar: React.FC = () => {
         { name: 'Dashboard', path: '/', icon: 'dashboard' as const },
         { name: 'Quran', path: '/surahs', icon: 'quran' as const },
         { name: 'Essentials', path: '/essentials', icon: 'essentials' as const },
+        { name: 'Guides', path: '/guides', icon: 'guides' as const },
     ];
 
     return (
