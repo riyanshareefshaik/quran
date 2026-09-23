@@ -13,7 +13,8 @@ export function getSupabase(): SupabaseClient | null {
     if (!url || !anonKey) return null;
     if (!client) {
         client = createClient(url, anonKey, {
-            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
+            // detectSessionInUrl lets the admin password-reset link sign the user in.
+            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
         });
     }
     return client;

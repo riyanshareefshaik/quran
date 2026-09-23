@@ -94,7 +94,7 @@ export default function FeedbackPage() {
                         <button type="submit" className="primary" disabled={state === 'sending' || message.trim().length < 5}>
                             {state === 'sending' ? 'Sending…' : 'Send feedback'}
                         </button>
-                        <p className="privacy">We only store what you type here. Your email is used only to reply to you.</p>
+                        <p className="privacy">We only store what you type here. Your email is used only to reply to you. See our <Link href="/privacy">Privacy Policy</Link>.</p>
                     </form>
                 )}
             </main>
@@ -136,6 +136,7 @@ export default function FeedbackPage() {
                 .chip:focus-visible, .primary:focus-visible, .secondary:focus-visible { outline: 2px solid var(--gold-primary); outline-offset: 2px; }
                 .error { color: #e6a5a5; font-size: 0.88rem; }
                 .privacy { font-size: 0.78rem; color: rgba(255, 255, 255, 0.45); }
+                .privacy :global(a) { color: var(--emerald-light); }
                 .notice { text-align: center; color: var(--off-white); display: flex; flex-direction: column; align-items: center; gap: 1rem; }
                 @media (max-width: 640px) {
                     .container { padding: 1.25rem; }

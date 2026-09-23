@@ -39,6 +39,42 @@ const SignIn: React.FC<{ supabase: SupabaseClient }> = ({ supabase }) => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [busy, setBusy] = useState(false);
+    const [mode, setMode] = useState<'signin' | 'forgot' | 'sent'>('signin');
+
+    const sendReset = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setBusy(true);
+        setError('');
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+            redirectTo: `${window.location.origin}/admin/reset`,
+        });
+        setBusy(false);
+        // Same message whether or not the email exists, so this can't be used to find admin emails.
+        if (error && error.status === 429) { setError('Too many requests. Please wait a few minutes and try again.'); return; }
+        setMode('sent');
+    };
+
+    if (mode !== 'signin') {
+        return (
+            <form className="adm-panel signin" onSubmit={sendReset}>
+                <h2 className="adm-h">Reset your password</h2>
+                {mode === 'sent' ? (
+                    <p className="adm-item-body">If an account exists for <strong>{email}</strong>, a reset link is on its way. Open it on this device; it expires after one hour.</p>
+                ) : (
+                    <>
+                        <p className="adm-meta">Enter your admin email and we’ll send you a link to choose a new password.</p>
+                        <label className="adm-field">
+                            Email
+                            <input className="adm-input" type="email" autoComplete="username" value={email} onChange={e => setEmail(e.target.value)} required />
+                        </label>
+                        {error && <p className="adm-error" role="alert">{error}</p>}
+                        <button type="submit" className="adm-btn primary" disabled={busy}>{busy ? 'Sending…' : 'Send reset link'}</button>
+                    </>
+                )}
+                <button type="button" className="adm-btn" onClick={() => { setMode('signin'); setError(''); }}>Back to sign in</button>
+            </form>
+        );
+    }
 
     const submit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -63,7 +99,7 @@ const SignIn: React.FC<{ supabase: SupabaseClient }> = ({ supabase }) => {
             </label>
             {error && <p className="adm-error" role="alert">{error}</p>}
             <button type="submit" className="adm-btn primary" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
-            <p className="adm-meta">Forgot your password? Ask another admin to reset it in Supabase → Authentication.</p>
+            <button type="button" className="adm-link" onClick={() => { setMode('forgot'); setError(''); }}>Forgot password?</button>
         </form>
     );
 };
@@ -166,6 +202,8 @@ export default function AdminPage() {
                 .adm-header h1 { font-size: 2rem; margin: 0; }
                 :global(.back-link) { color: var(--emerald-light); font-size: 0.9rem; }
                 :global(.back-link:hover) { color: var(--gold-primary); }
+                :global(.adm-link) { background: none; border: none; padding: 0; color: var(--emerald-light); cursor: pointer; font-family: inherit; font-size: 0.85rem; align-self: flex-start; }
+                :global(.adm-link:hover) { color: var(--gold-primary); }
                 :global(.signin) { max-width: 420px; display: flex; flex-direction: column; gap: 1rem; }
                 :global(.setup ol) { padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.5rem; color: rgba(255,255,255,0.85); font-size: 0.92rem; }
                 :global(.setup code) { color: var(--gold-primary); }

@@ -134,11 +134,34 @@ export default function Home() {
             <span className="badge-icon">✓</span>
             Text verified from official Quran API
           </Link>
+          <nav className="home-links" aria-label="More">
+            <Link href="/account">My Account</Link>
+            <Link href="/feedback">Feedback</Link>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
+          </nav>
           <p>© 2026 Nur Al-Quran. Elegant. Authentic. Free.</p>
         </footer>
       </main>
 
       <style jsx>{`
+        .home-links {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 0.5rem 1.25rem;
+          margin: 1rem 0 0.5rem;
+          font-size: 0.85rem;
+        }
+
+        .home-links :global(a) {
+          color: var(--emerald-light);
+        }
+
+        .home-links :global(a:hover) {
+          color: var(--gold-primary);
+        }
+
         .container {
           min-height: 100vh;
           display: flex;
