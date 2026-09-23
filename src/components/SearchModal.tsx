@@ -44,12 +44,35 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
             ? { id: surahNumberMatch, chapter: chapters.find((c) => c.id === surahNumberMatch) }
             : null;
 
+    // Strip everything but letters so "Al-Baqarah", "al baqarah", and a
+    // dropped trailing letter like "Baqara" all normalize to comparable
+    // forms, instead of requiring an exact substring match.
+    const normalize = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '');
+    const normalizedQuery = normalize(trimmedQuery);
+
+    const matchingSurahs =
+        !jumpTarget && normalizedQuery.length >= 3
+            ? chapters
+                  .filter((c) => {
+                      const complex = normalize(c.name_complex);
+                      const translated = normalize(c.translated_name.name);
+                      return (
+                          complex.includes(normalizedQuery) ||
+                          translated.includes(normalizedQuery) ||
+                          // Also match the other way for short/abbreviated queries
+                          // against a longer surah name (e.g. "fatiha" vs "al-fatihah").
+                          (normalizedQuery.length >= 4 && complex.startsWith(normalizedQuery.slice(0, 4)))
+                      );
+                  })
+                  .slice(0, 5)
+            : [];
+
     // Debounced Search using Quran.com V4 basic Search API
     useEffect(() => {
         const fetchResults = async () => {
-            // Pure-number queries are handled by the jump shortcut above,
-            // not sent to the verse-text search API.
-            if (query.trim().length < 3 || jumpTarget) {
+            // Pure-number queries and surah-name matches are handled by the
+            // jump shortcuts above, not sent to the verse-text search API.
+            if (query.trim().length < 3 || jumpTarget || matchingSurahs.length > 0) {
                 setResults([]);
                 setSearchError(null);
                 return;
@@ -118,6 +141,19 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                                 <div className="jump-arabic amiri-text">{jumpTarget.chapter.name_arabic}</div>
                             )}
                         </Link>
+                    ) : matchingSurahs.length > 0 ? (
+                        matchingSurahs.map((chapter) => (
+                            <Link href={`/surah/${chapter.id}`} key={chapter.id} className="jump-item" onClick={onClose}>
+                                <div className="jump-number">{chapter.id}</div>
+                                <div className="jump-info">
+                                    <div className="jump-title">{chapter.name_complex}</div>
+                                    <div className="jump-sub">
+                                        {chapter.translated_name.name} · {chapter.verses_count} Ayahs
+                                    </div>
+                                </div>
+                                <div className="jump-arabic amiri-text">{chapter.name_arabic}</div>
+                            </Link>
+                        ))
                     ) : isSearching ? (
                         <div className="search-status">Searching divine texts...</div>
                     ) : searchError ? (

@@ -19,8 +19,6 @@ const AudioPlayer: React.FC = () => {
     playAyah,
     stopPlayer,
     audioUrl,
-    translationVoice,
-    setTranslationVoice
   } = useAudio();
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -93,16 +91,6 @@ const AudioPlayer: React.FC = () => {
                   </button>
                 ))}
               </div>
-            </div>
-
-            <div className="setting-group">
-              <label>Read English Translation</label>
-              <button
-                className={`toggle-switch ${translationVoice ? 'on' : 'off'}`}
-                onClick={() => setTranslationVoice(!translationVoice)}
-              >
-                <div className="toggle-thumb" />
-              </button>
             </div>
 
             <div className="setting-group">

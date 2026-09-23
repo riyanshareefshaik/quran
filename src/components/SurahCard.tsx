@@ -47,16 +47,22 @@ const SurahCard: React.FC<SurahCardProps> = ({
       const audioUrl = await fetchChapterRecitation(id, currentReciterId);
       if (!audioUrl) throw new Error('No audio URL returned');
 
-      // Fetch as a blob so the browser downloads the file directly instead
-      // of navigating to/streaming the audio CDN URL in-page.
-      const res = await fetch(audioUrl);
+      // Fetching the CDN URL directly from the browser fails silently on
+      // CORS (the CDN doesn't send Access-Control-Allow-Origin for blob
+      // reads). Route through our own server, which has no such
+      // restriction, and which sets Content-Disposition so the browser
+      // downloads it directly.
+      const filename = `${String(id).padStart(3, '0')}-${name.replace(/\s+/g, '-')}.mp3`;
+      const proxyUrl = `/api/download-audio?url=${encodeURIComponent(audioUrl)}&filename=${encodeURIComponent(filename)}`;
+
+      const res = await fetch(proxyUrl);
       if (!res.ok) throw new Error('Failed to fetch audio file');
       const blob = await res.blob();
       const objectUrl = URL.createObjectURL(blob);
 
       const link = document.createElement('a');
       link.href = objectUrl;
-      link.download = `${String(id).padStart(3, '0')}-${name.replace(/\s+/g, '-')}.mp3`;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -149,12 +155,12 @@ const SurahCard: React.FC<SurahCardProps> = ({
 
         .surah-card {
           display: flex;
+          flex-wrap: wrap;
           align-items: center;
           gap: 1.5rem;
           padding: 1.25rem 1.5rem;
           cursor: pointer;
           position: relative;
-          overflow: hidden;
         }
 
         .surah-card.playing {
@@ -228,21 +234,16 @@ const SurahCard: React.FC<SurahCardProps> = ({
         }
 
         .surah-actions-overlay {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(4, 57, 39, 0.85);
-          backdrop-filter: blur(4px);
+          flex-basis: 100%;
           display: flex;
           align-items: center;
-          justify-content: center;
-          gap: 2rem;
+          justify-content: flex-end;
+          gap: 1.5rem;
+          max-height: 0;
           opacity: 0;
+          overflow: hidden;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          transform: translateY(10px);
-          border-radius: 12px;
+          border-top: 1px solid transparent;
         }
 
         .action-item {
@@ -271,8 +272,11 @@ const SurahCard: React.FC<SurahCardProps> = ({
 
         .surah-card:hover .surah-actions-overlay,
         .surah-card:active .surah-actions-overlay {
+          max-height: 80px;
           opacity: 1;
-          transform: translateY(0);
+          margin-top: 0.75rem;
+          padding-top: 0.75rem;
+          border-top-color: var(--glass-border);
         }
 
         /* Touchscreens have no :hover state, so the overlay would otherwise

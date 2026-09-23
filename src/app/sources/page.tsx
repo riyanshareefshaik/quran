@@ -31,13 +31,6 @@ const SOURCES: SourceEntry[] = [
         auth: 'Public, no API key required',
     },
     {
-        name: 'Text-to-Speech Proxy',
-        used: true,
-        purpose: 'Spoken translation playback for verses. Requests are routed through this app\u2019s own rate-limited server endpoint before reaching a third-party TTS provider.',
-        endpoint: '/api/tts (this app\u2019s own server)',
-        auth: 'Rate-limited (20 requests/minute per device)',
-    },
-    {
         name: 'AlQuran Cloud API',
         used: false,
         purpose: 'Ayah lookup, multiple text editions, juz/ruku/hizb/manzil divisions, and full-text search.',

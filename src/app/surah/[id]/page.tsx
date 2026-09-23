@@ -17,13 +17,10 @@ interface VerseCardProps {
   focusMode?: boolean;
   onShare: (verse: Verse) => void;
   onPlay: (verse: Verse) => void;
-  onPlayTranslation?: (text: string) => void;
-  isTranslationPlaying?: boolean;
-  onStopTranslation?: () => void;
   onRead?: () => void;
 }
 
-const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, focusMode, onShare, onPlay, onPlayTranslation, isTranslationPlaying, onStopTranslation, onRead }) => {
+const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, focusMode, onShare, onPlay, onRead }) => {
   const [showTranslation, setShowTranslation] = useState(!isMemoMode);
   const cardRef = React.useRef<HTMLDivElement>(null);
 
@@ -101,27 +98,6 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
                     )}
                   </div>
 
-                  {onPlayTranslation && verse.translations && verse.translations.length > 0 && (
-                    <div className="translation-audio-controls">
-                      {isTranslationPlaying ? (
-                        <button
-                          className="stop-translation-btn"
-                          onClick={() => onStopTranslation?.()}
-                          title="Stop Translation Audio"
-                        >
-                          ⏹ Stop Meaning
-                        </button>
-                      ) : (
-                        <button
-                          className="play-translation-btn"
-                          onClick={() => onPlayTranslation(verse.translations![0].text.replace(/<[^>]*>?/gm, ''))}
-                          title="Play Translation Audio"
-                        >
-                          ▶ Listen to Meaning
-                        </button>
-                      )}
-                    </div>
-                  )}
                 </div>
               ) : (
                 <div className="memo-reveal-container">
@@ -357,43 +333,6 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
             font-size: 0.8rem;
             opacity: 0.7;
         }
-        .play-translation-btn, .stop-translation-btn {
-            align-self: flex-start;
-            background: rgba(212, 175, 55, 0.1);
-            color: var(--gold-primary);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            border-radius: 20px;
-            padding: 0.4rem 1rem;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .play-translation-btn:hover {
-            background: var(--gold-primary);
-            color: var(--matte-black);
-        }
-
-        .play-translation-btn:focus-visible,
-        .stop-translation-btn:focus-visible {
-            outline: 2px solid var(--gold-primary);
-            outline-offset: 2px;
-        }
-
-        .stop-translation-btn {
-            background: rgba(220, 53, 69, 0.1);
-            color: #ff6b6b;
-            border-color: rgba(220, 53, 69, 0.3);
-        }
-
-        .stop-translation-btn:hover {
-            background: rgba(220, 53, 69, 0.2);
-            border-color: #ff6b6b;
-        }
-
         .reveal-btn {
             background: rgba(212, 175, 55, 0.1);
             border: 1px solid var(--gold-primary);
@@ -458,7 +397,7 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
 
 export default function SurahPage() {
   const { id } = useParams();
-  const { playChapter, playAyah, playTranslationText, stopTranslation, isPlaying, isPlayingTranslation, currentTranslationVerseKey, currentChapterId, togglePlay, translationVoice } = useAudio();
+  const { playChapter, playAyah, isPlaying, currentChapterId, togglePlay } = useAudio();
   const { arabicFontSize, setArabicFontSize, readingComfortMode, toggleReadingComfortMode, focusMode, toggleFocusMode } = useSettings();
   const { markAyahRead, setLastRead } = useProgress();
   const [chapter, setChapter] = useState<Chapter | null>(null);
@@ -492,28 +431,8 @@ export default function SurahPage() {
     }
 
     if (chapter) {
-      if (translationVoice) {
-        // If translation Text-to-Speech is enabled, we MUST play verse-by-verse to allow the TTS engine to speak in between.
-        playVersesSequentially(0);
-      } else {
-        // If translation is disabled, play the single, seamless chapter MP3
-        playChapter(chapter.id, chapter.name_complex);
-      }
+      playChapter(chapter.id, chapter.name_complex);
     }
-  };
-
-  const playVersesSequentially = (startIndex: number) => {
-    if (!chapter || startIndex >= verses.length) return;
-
-    const v = verses[startIndex];
-    const transLang = translations.find(t => t.id === selectedTranslation)?.language_name || 'english';
-    const transText = v.translations?.[0]?.text.replace(/<[^>]*>?/gm, '') || '';
-
-    playAyah(
-      v.verse_key,
-      chapter.id,
-      chapter.name_complex
-    );
   };
 
   const isCurrentPlaying = isPlaying && currentChapterId === parseInt(id as string);
@@ -752,13 +671,6 @@ export default function SurahPage() {
               chapter?.id || 0,
               chapter?.name_complex || ''
             )}
-            onPlayTranslation={(text) => playTranslationText(
-              text,
-              translations.find(t => t.id === selectedTranslation)?.language_name || 'english',
-              verse.verse_key
-            )}
-            isTranslationPlaying={isPlayingTranslation && currentTranslationVerseKey === verse.verse_key}
-            onStopTranslation={stopTranslation}
             onRead={() => {
               markAyahRead(verse.verse_key);
               setLastRead(chapter?.name_complex || '', verse.verse_key, chapter?.id || 0);

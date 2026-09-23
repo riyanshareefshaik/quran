@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
 import { fetchChapterRecitation, RECITERS } from '@/lib/quran-api';
-import { buildTtsUrl } from '@/lib/api-config';
 import { useProgress } from '@/context/ProgressContext';
 
 interface AudioState {
@@ -14,10 +13,7 @@ interface AudioState {
     currentTime: number;
     duration: number;
     playbackSpeed: number;
-    translationVoice: boolean;
-    isPlayingTranslation: boolean;
     currentVerseKey: string | null;
-    currentTranslationVerseKey: string | null;
 }
 
 interface AudioContextType extends AudioState {
@@ -31,10 +27,7 @@ interface AudioContextType extends AudioState {
         chapterId: number,
         chapterName: string
     ) => Promise<void>;
-    playTranslationText: (text: string, langName: string, verseKey?: string) => void;
-    stopTranslation: () => void;
     stopPlayer: () => void;
-    setTranslationVoice: (enabled: boolean) => void;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -50,14 +43,10 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         currentTime: 0,
         duration: 0,
         playbackSpeed: 1,
-        translationVoice: false,
-        isPlayingTranslation: false,
         currentVerseKey: null,
-        currentTranslationVerseKey: null
     });
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
-    const translationAudioRef = useRef<HTMLAudioElement | null>(null);
     const stateRef = useRef(state);
 
     useEffect(() => {
@@ -67,7 +56,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Setup Audio references
     useEffect(() => {
         audioRef.current = new Audio();
-        translationAudioRef.current = new Audio();
 
         const audio = audioRef.current;
 
@@ -94,17 +82,12 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             audio.removeEventListener('play', handlePlay);
             audio.removeEventListener('pause', handlePause);
             audio.pause();
-            if (translationAudioRef.current) {
-                translationAudioRef.current.pause();
-                translationAudioRef.current.src = '';
-            }
         };
     }, []);
 
     const playChapter = async (chapterId: number, chapterName: string) => {
         try {
-            if (translationAudioRef.current) translationAudioRef.current.pause();
-            setState(prev => ({ ...prev, isPlayingTranslation: false, currentVerseKey: null }));
+            setState(prev => ({ ...prev, currentVerseKey: null }));
 
             const url = await fetchChapterRecitation(chapterId, state.currentReciterId);
             if (url && audioRef.current) {
@@ -131,11 +114,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         chapterName: string
     ) => {
         try {
-            if (translationAudioRef.current) {
-                translationAudioRef.current.pause();
-            }
-            setState(prev => ({ ...prev, isPlayingTranslation: false }));
-
             // Import fetchAyahRecitation dynamically to avoid circular dependency if not at top, but it's at top
             const { fetchAyahRecitation } = await import('@/lib/quran-api');
             const url = await fetchAyahRecitation(verseKey, state.currentReciterId);
@@ -163,13 +141,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
 
     const togglePlay = () => {
-        if (state.isPlayingTranslation && translationAudioRef.current) {
-            // Cancel TTS entirely on pause
-            translationAudioRef.current.pause();
-            setState(prev => ({ ...prev, isPlayingTranslation: false }));
-            return;
-        }
-
         if (audioRef.current) {
             if (state.isPlaying) {
                 audioRef.current.pause();
@@ -180,8 +151,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
 
     const stopPlayer = () => {
-        if (translationAudioRef.current) translationAudioRef.current.pause();
-
         if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
@@ -191,22 +160,11 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setState(prev => ({
             ...prev,
             isPlaying: false,
-            isPlayingTranslation: false,
             audioUrl: null,
             currentChapterId: null,
             currentChapterName: null,
             currentVerseKey: null,
-            currentTranslationVerseKey: null,
         }));
-    };
-
-    const stopTranslation = () => {
-        if (translationAudioRef.current) {
-            translationAudioRef.current.pause();
-            translationAudioRef.current.removeAttribute('src');
-            translationAudioRef.current.load();
-        }
-        setState(prev => ({ ...prev, isPlayingTranslation: false, currentTranslationVerseKey: null }));
     };
 
     const setReciter = async (reciterId: number) => {
@@ -242,111 +200,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
     };
 
-    const setTranslationVoice = (enabled: boolean) => {
-        setState(prev => ({ ...prev, translationVoice: enabled }));
-        if (!enabled && translationAudioRef.current) {
-            translationAudioRef.current.pause();
-            setState(prev => ({ ...prev, isPlayingTranslation: false }));
-        }
-    };
-
-    const playTranslationText = async (text: string, langName: string, verseKey?: string) => {
-        if (translationAudioRef.current) {
-            translationAudioRef.current.pause();
-        }
-
-        setState(prev => ({ ...prev, isPlayingTranslation: true, currentTranslationVerseKey: verseKey || null }));
-
-        const standardLang = langName.toLowerCase();
-
-        const alQuranCloudMap: { [key: string]: string } = {
-            'english': 'en.walk',
-            'urdu': 'ur.khan',
-            'french': 'fr.leclerc',
-            'russian': 'ru.kuliev-audio',
-            'chinese': 'zh.chinese',
-            'persian': 'fa.hedayatfarfooladvand'
-        };
-
-        // Fallback generator using standard Google Cloud Text-to-Speech proxy
-        const fallbackToGoogleTTS = () => {
-            const langMap: { [key: string]: string } = {
-                'english': 'en', 'urdu': 'ur', 'hindi': 'hi', 'french': 'fr',
-                'spanish': 'es', 'german': 'de', 'indonesian': 'id', 'turkish': 'tr',
-                'bengali': 'bn', 'russian': 'ru', 'chinese': 'zh'
-            };
-
-            const langCode = langMap[standardLang] || 'en';
-
-            // Google Translate TTS is limited to 200 character strings per query
-            const strictMatch = text.match(/.{1,199}(?:\s|$)/g) || [text];
-            const chunks = strictMatch.map(s => s.trim()).filter(Boolean);
-
-            let currentChunkIndex = 0;
-
-            const playNextChunk = () => {
-                if (currentChunkIndex >= chunks.length || !translationAudioRef.current) {
-                    setState(prev => ({ ...prev, isPlayingTranslation: false }));
-                    return;
-                }
-
-                const chunk = chunks[currentChunkIndex];
-                const url = buildTtsUrl(langCode, chunk);
-
-                translationAudioRef.current.src = url;
-                translationAudioRef.current.onended = () => {
-                    currentChunkIndex++;
-                    playNextChunk();
-                };
-                translationAudioRef.current.onerror = () => {
-                    console.error('Translation TTS chunk failed to play.');
-                    setState(prev => ({ ...prev, isPlayingTranslation: false }));
-                };
-
-                translationAudioRef.current.play().catch(e => {
-                    console.warn('TTS Playback interrupted or blocked by browser', e);
-                    setState(prev => ({ ...prev, isPlayingTranslation: false }));
-                });
-            };
-
-            playNextChunk();
-        };
-
-        // 1. If language is supported by official AlQuran.cloud API, fetch studio audio
-        if (verseKey && alQuranCloudMap[standardLang]) {
-            const edition = alQuranCloudMap[standardLang];
-            try {
-                const res = await fetch(`https://api.alquran.cloud/v1/ayah/${verseKey}/${edition}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data?.data?.audio) {
-                        if (!translationAudioRef.current) return;
-                        translationAudioRef.current.src = data.data.audio;
-                        translationAudioRef.current.onended = () => setState(prev => ({ ...prev, isPlayingTranslation: false }));
-                        translationAudioRef.current.onerror = () => {
-                            console.error('AlQuran Cloud Audio failed. Falling back to TTS proxy...');
-                            fallbackToGoogleTTS();
-                        };
-
-                        await translationAudioRef.current.play().catch(e => {
-                            console.warn('AlQuran Playback blocked by browser', e);
-                            setState(prev => ({ ...prev, isPlayingTranslation: false }));
-                        });
-                        return; // Successfully played human recording
-                    }
-                }
-            } catch (err) {
-                console.error('AlQuran Cloud API fetch failed:', err);
-                // Proceed to fallback
-            }
-        }
-
-        // 2. Fallback to automated chunks
-        fallbackToGoogleTTS();
-    };
-
     return (
-        <AudioContext.Provider value={{ ...state, playChapter, togglePlay, setReciter, setSpeed, seek, playAyah, playTranslationText, stopTranslation, stopPlayer, setTranslationVoice }}>
+        <AudioContext.Provider value={{ ...state, playChapter, togglePlay, setReciter, setSpeed, seek, playAyah, stopPlayer }}>
             {children}
         </AudioContext.Provider>
     );
