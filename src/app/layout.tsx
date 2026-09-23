@@ -56,7 +56,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="dark" className={`${inter.variable} ${amiri.variable} ${cinzel.variable}`}>
+    <html lang="en" data-theme="dark" data-scroll-behavior="smooth" className={`${inter.variable} ${amiri.variable} ${cinzel.variable}`}>
       <body className="islamic-pattern" suppressHydrationWarning>
         <SettingsProvider>
           <ProgressProvider>
