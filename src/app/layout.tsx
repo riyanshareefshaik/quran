@@ -7,6 +7,7 @@ import { ProgressProvider } from "@/context/ProgressContext";
 import { BookmarkProvider } from "@/context/BookmarkContext";
 import Sidebar from "@/components/Sidebar";
 import AudioPlayer from "@/components/AudioPlayer";
+import PageViewTracker from "@/components/PageViewTracker";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -66,6 +67,7 @@ export default function RootLayout({
                   {children}
                 </div>
                 <AudioPlayer />
+                <PageViewTracker />
               </AudioProvider>
             </BookmarkProvider>
           </ProgressProvider>

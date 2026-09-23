@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import OrnateFrame from '@/components/OrnateFrame';
 import OrnateDivider from '@/components/OrnateDivider';
+import ReportIssueButton from '@/components/ReportIssueButton';
 import { Guide, GuideDua, GUIDE_DISCLAIMER } from '@/lib/guides';
 
 const DuaCard: React.FC<{ dua: GuideDua }> = ({ dua }) => (
@@ -165,6 +166,10 @@ const GuideView: React.FC<{ guide: Guide }> = ({ guide }) => {
                                                 </ul>
                                             </div>
                                         )}
+
+                                        <div className="section-report">
+                                            <ReportIssueButton contentType="guide" contentRef={`${guide.title} — ${section.title}`} label="Report a mistake" />
+                                        </div>
 
                                         {section.sources && (
                                             <div className="sources">
@@ -431,6 +436,11 @@ const GuideView: React.FC<{ guide: Guide }> = ({ guide }) => {
                 .sources li {
                     color: rgba(255, 255, 255, 0.6);
                     font-size: 0.85rem;
+                }
+                .section-report {
+                    order: 99;
+                    display: flex;
+                    justify-content: flex-end;
                 }
                 .disclaimer {
                     margin: 2.5rem 0 1rem;

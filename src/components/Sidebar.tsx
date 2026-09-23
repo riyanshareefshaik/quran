@@ -54,6 +54,11 @@ const Sidebar: React.FC = () => {
                 </nav>
 
                 <div className="sidebar-footer">
+                    <nav className="footer-links" aria-label="More">
+                        <Link href="/feedback">Feedback</Link>
+                        <span aria-hidden="true">·</span>
+                        <Link href="/sources">Sources</Link>
+                    </nav>
                     <p className="version-info">v2.0 Beta</p>
                 </div>
             </aside>
@@ -178,6 +183,19 @@ const Sidebar: React.FC = () => {
                 .sidebar-footer {
                     padding: 1rem 2rem;
                     text-align: center;
+                }
+
+                .footer-links {
+                    display: flex;
+                    justify-content: center;
+                    gap: 0.5rem;
+                    font-size: 0.8rem;
+                    color: var(--emerald-light);
+                    margin-bottom: 0.4rem;
+                }
+
+                .footer-links :global(a:hover) {
+                    color: var(--gold-primary);
                 }
 
                 .version-info {

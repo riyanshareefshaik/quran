@@ -17,7 +17,7 @@ export default function GuidesPage() {
                 <OrnateFrame style={{ background: 'radial-gradient(ellipse at center, rgba(212, 175, 55, 0.05), transparent 70%)', marginBottom: '2rem' }}>
                     <div className="title-area">
                         <h1 className="gold-text font-display">Guidance</h1>
-                        <p className="subtitle">Ramadan · Umrah · Hajj</p>
+                        <p className="subtitle">Shahada · Ramadan · Umrah · Hajj</p>
                     </div>
                 </OrnateFrame>
 

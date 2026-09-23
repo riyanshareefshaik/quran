@@ -7,9 +7,10 @@
 //   from. Only add duas with a known, reliable source.
 // - Never label content by sect or school; this app speaks to all Muslims.
 
-export type EssentialCategory = 'salawat' | 'prayer' | 'quran' | 'daily' | 'remembrance' | 'quranic-duas';
+export type EssentialCategory = 'kalimas' | 'salawat' | 'prayer' | 'quran' | 'daily' | 'remembrance' | 'quranic-duas';
 
 export const ESSENTIAL_CATEGORIES: { id: EssentialCategory; label: string }[] = [
+    { id: 'kalimas', label: 'Six Kalimas' },
     { id: 'salawat', label: 'Durood & Salawat' },
     { id: 'prayer', label: 'In Prayer' },
     { id: 'quran', label: 'Protection from the Quran' },
@@ -37,6 +38,101 @@ export interface EssentialItem {
 }
 
 export const ESSENTIALS: EssentialItem[] = [
+    // ── Six Kalimas ──────────────────────────────────────────────────
+    // Taught together as a set to help learn the core phrases of the faith.
+    // The set and its numbering are a teaching tradition; each entry names
+    // where its wording comes from.
+    {
+        id: 'kalima-1',
+        category: 'kalimas',
+        title: '1st Kalima — Tayyibah (Purity)',
+        arabicTitle: 'كَلِمَةُ الطَّيِّبَة',
+        description: 'The word of purity: the foundation of Islam. The Prophet ﷺ said: "The best remembrance is lā ilāha illā Allāh" (Jāmiʿ at-Tirmidhi, Jābir).',
+        source: 'Quran 47:19 ("lā ilāha illā Allāh") & 48:29 ("Muḥammadun rasūlu Allāh")',
+        content: [
+            {
+                arabic: 'لَا إِلَهَ إِلَّا اللَّهُ مُحَمَّدٌ رَسُولُ اللَّهِ',
+                transliteration: 'Lā ilāha illā Allāh, Muḥammadur-Rasūlullāh.',
+                translation: 'There is no god but Allah; Muhammad is the Messenger of Allah.',
+            },
+        ],
+    },
+    {
+        id: 'kalima-2',
+        category: 'kalimas',
+        title: '2nd Kalima — Shahadah (Testimony)',
+        arabicTitle: 'كَلِمَةُ الشَّهَادَة',
+        description: 'The testimony of faith. Saying it sincerely, with belief in the heart, is how a person enters Islam.',
+        source: 'Sahih al-Bukhari & Sahih Muslim (the Tashahhud of ʿAbdullāh ibn Masʿūd); "waḥdahū lā sharīka lah" in Sahih Muslim (ʿUbādah ibn aṣ-Ṣāmit)',
+        content: [
+            {
+                arabic: 'أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ',
+                transliteration: 'Ashhadu an lā ilāha illā Allāhu waḥdahū lā sharīka lah, wa ashhadu anna Muḥammadan ʿabduhū wa rasūluh.',
+                translation: 'I bear witness that there is no god but Allah, alone, without partner, and I bear witness that Muhammad is His servant and His Messenger.',
+            },
+        ],
+    },
+    {
+        id: 'kalima-3',
+        category: 'kalimas',
+        title: '3rd Kalima — Tamjeed (Glorification)',
+        arabicTitle: 'كَلِمَةُ التَّمْجِيد',
+        description: 'The Prophet ﷺ said: "The most beloved words to Allah are four: Subḥān Allāh, al-ḥamdu lillāh, lā ilāha illā Allāh and Allāhu akbar." He called "lā ḥawla wa lā quwwata illā billāh" a treasure of Paradise.',
+        source: 'Sahih Muslim (Samurah ibn Jundub); Sahih al-Bukhari & Sahih Muslim (Abū Mūsā al-Ashʿarī)',
+        content: [
+            {
+                arabic: 'سُبْحَانَ اللَّهِ وَالْحَمْدُ لِلَّهِ وَلَا إِلَهَ إِلَّا اللَّهُ وَاللَّهُ أَكْبَرُ، وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ الْعَلِيِّ الْعَظِيمِ',
+                transliteration: 'Subḥān Allāhi wal-ḥamdu lillāhi wa lā ilāha illā Allāhu wa Allāhu akbar, wa lā ḥawla wa lā quwwata illā billāhil-ʿAliyyil-ʿAẓīm.',
+                translation: 'Glory be to Allah, all praise is for Allah, there is no god but Allah, and Allah is the Greatest. There is no might nor power except with Allah, the Most High, the Most Great.',
+            },
+        ],
+    },
+    {
+        id: 'kalima-4',
+        category: 'kalimas',
+        title: '4th Kalima — Tawheed (Oneness)',
+        arabicTitle: 'كَلِمَةُ التَّوْحِيد',
+        description: 'A declaration of Allah’s Oneness, closely following the dhikr the Prophet ﷺ taught for entering the marketplace.',
+        source: 'Jāmiʿ at-Tirmidhi & Sunan Ibn Mājah (ʿUmar ibn al-Khaṭṭāb); "Dhul-Jalāli wal-Ikrām" from Quran 55:27',
+        content: [
+            {
+                arabic: 'لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، يُحْيِي وَيُمِيتُ، وَهُوَ حَيٌّ لَا يَمُوتُ أَبَدًا أَبَدًا، ذُو الْجَلَالِ وَالْإِكْرَامِ، بِيَدِهِ الْخَيْرُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ',
+                transliteration: 'Lā ilāha illā Allāhu waḥdahū lā sharīka lah, lahul-mulku wa lahul-ḥamd, yuḥyī wa yumīt, wa huwa ḥayyun lā yamūtu abadan abadā, dhul-jalāli wal-ikrām, biyadihil-khayr, wa huwa ʿalā kulli shayʾin qadīr.',
+                translation: 'There is no god but Allah, alone, without partner. His is the dominion and His is the praise. He gives life and causes death, and He is Ever-Living and never dies, ever. Possessor of Majesty and Honour, in His Hand is all good, and He has power over all things.',
+            },
+        ],
+    },
+    {
+        id: 'kalima-5',
+        category: 'kalimas',
+        title: '5th Kalima — Astaghfar (Seeking Forgiveness)',
+        arabicTitle: 'كَلِمَةُ الِاسْتِغْفَار',
+        description: 'A comprehensive seeking of forgiveness for every sin, known and unknown. Allah says: "And seek forgiveness of Allah. Indeed, Allah is ever Forgiving and Merciful" (Quran 4:106).',
+        source: 'Traditional compilation of Quranic names and phrases: ʿAllām al-Ghuyūb (Quran 5:109), Ghaffār (Quran 71:10)',
+        content: [
+            {
+                arabic: 'أَسْتَغْفِرُ اللَّهَ رَبِّي مِنْ كُلِّ ذَنْبٍ أَذْنَبْتُهُ عَمْدًا أَوْ خَطَأً، سِرًّا أَوْ عَلَانِيَةً، وَأَتُوبُ إِلَيْهِ مِنَ الذَّنْبِ الَّذِي أَعْلَمُ، وَمِنَ الذَّنْبِ الَّذِي لَا أَعْلَمُ، إِنَّكَ أَنْتَ عَلَّامُ الْغُيُوبِ، وَسَتَّارُ الْعُيُوبِ، وَغَفَّارُ الذُّنُوبِ، وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ الْعَلِيِّ الْعَظِيمِ',
+                transliteration: 'Astaghfirullāha Rabbī min kulli dhanbin adhnabtuhū ʿamdan aw khaṭaʾan, sirran aw ʿalāniyah, wa atūbu ilayhi minadh-dhanbil-ladhī aʿlamu wa minadh-dhanbil-ladhī lā aʿlam, innaka anta ʿallāmul-ghuyūb, wa sattārul-ʿuyūb, wa ghaffārudh-dhunūb, wa lā ḥawla wa lā quwwata illā billāhil-ʿAliyyil-ʿAẓīm.',
+                translation: 'I seek forgiveness from Allah, my Lord, for every sin I have committed, knowingly or unknowingly, secretly or openly, and I turn to Him in repentance from the sin I know and from the sin I do not know. Indeed You are the Knower of the unseen, the Concealer of faults and the Forgiver of sins. There is no might nor power except with Allah, the Most High, the Most Great.',
+            },
+        ],
+    },
+    {
+        id: 'kalima-6',
+        category: 'kalimas',
+        title: '6th Kalima — Radd al-Kufr (Rejecting Disbelief)',
+        arabicTitle: 'كَلِمَةُ رَدِّ الْكُفْر',
+        description: 'Seeking refuge from associating anything with Allah, and disowning disbelief and sin. Its opening follows a dua the Prophet ﷺ taught Abū Bakr as protection from hidden shirk.',
+        source: 'Opening: al-Adab al-Mufrad of al-Bukhari (Maʿqil ibn Yasār, from Abū Bakr); the rest is a traditional compilation',
+        content: [
+            {
+                arabic: 'اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ أَنْ أُشْرِكَ بِكَ شَيْئًا وَأَنَا أَعْلَمُ بِهِ، وَأَسْتَغْفِرُكَ لِمَا لَا أَعْلَمُ بِهِ، تُبْتُ عَنْهُ، وَتَبَرَّأْتُ مِنَ الْكُفْرِ وَالشِّرْكِ وَالْكِذْبِ وَالْغِيبَةِ وَالْبِدْعَةِ وَالنَّمِيمَةِ وَالْفَوَاحِشِ وَالْبُهْتَانِ وَالْمَعَاصِي كُلِّهَا، وَأَسْلَمْتُ وَأَقُولُ: لَا إِلَهَ إِلَّا اللَّهُ مُحَمَّدٌ رَسُولُ اللَّهِ',
+                transliteration: 'Allāhumma innī aʿūdhu bika min an ushrika bika shayʾan wa ana aʿlamu bih, wa astaghfiruka limā lā aʿlamu bih, tubtu ʿanhu, wa tabarraʾtu minal-kufri wash-shirki wal-kidhbi wal-ghībati wal-bidʿati wan-namīmati wal-fawāḥishi wal-buhtāni wal-maʿāṣī kullihā, wa aslamtu wa aqūlu: lā ilāha illā Allāh, Muḥammadur-Rasūlullāh.',
+                translation: 'O Allah, I seek refuge in You from knowingly associating anything with You, and I seek Your forgiveness for what I do not know. I repent from it, and I disown disbelief, associating partners with You, lying, backbiting, innovation in religion, tale-bearing, indecency, slander and all sins. I submit, and I say: there is no god but Allah; Muhammad is the Messenger of Allah.',
+            },
+        ],
+    },
+
     // ── Durood & Salawat ──────────────────────────────────────────────
     {
         id: 'durood-ibrahim',
@@ -240,28 +336,6 @@ export const ESSENTIALS: EssentialItem[] = [
     },
 
     // ── Dhikr & Istighfar ─────────────────────────────────────────────
-    {
-        id: 'shahadah',
-        category: 'remembrance',
-        title: 'Kalimah & Shahadah',
-        arabicTitle: 'كَلِمَةُ التَّوْحِيد',
-        description: 'The declaration of faith. The Prophet ﷺ said: "The best remembrance is lā ilāha illā Allāh."',
-        source: 'Quran 47:19 & 48:29 · Jāmiʿ at-Tirmidhi (Jābir ibn ʿAbdillāh); Shahadah wording in Sahih Muslim',
-        content: [
-            {
-                arabic: 'لَا إِلَهَ إِلَّا اللَّهُ مُحَمَّدٌ رَسُولُ اللَّهِ',
-                transliteration: 'Lā ilāha illā Allāh, Muḥammadur-Rasūlullāh.',
-                translation: 'There is no god but Allah; Muhammad is the Messenger of Allah.',
-                note: 'Kalimah Ṭayyibah',
-            },
-            {
-                arabic: 'أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ',
-                transliteration: 'Ashhadu an lā ilāha illā Allāh, wa ashhadu anna Muḥammadan ʿabduhū wa rasūluh.',
-                translation: 'I bear witness that there is no god but Allah, and I bear witness that Muhammad is His servant and Messenger.',
-                note: 'Shahādah',
-            },
-        ],
-    },
     {
         id: 'sayyid-istighfar',
         category: 'remembrance',

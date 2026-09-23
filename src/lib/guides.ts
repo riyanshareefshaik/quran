@@ -10,7 +10,7 @@
 // - Arabic duas are copied from the cited sources; check any change against
 //   the original before committing.
 
-export type GuideSlug = 'ramadan' | 'hajj' | 'umrah';
+export type GuideSlug = 'shahada' | 'ramadan' | 'hajj' | 'umrah';
 
 export interface GuideDua {
     title: string;
@@ -79,6 +79,106 @@ const CONDITIONAL_IHRAM: GuideDua = {
 };
 
 export const GUIDES: Record<GuideSlug, Guide> = {
+    shahada: {
+        slug: 'shahada',
+        title: 'Embracing Islam',
+        arabicTitle: 'الشَّهَادَة',
+        subtitle: 'How to take the Shahada, and your first steps as a Muslim',
+        intro: 'A person becomes Muslim by sincerely believing in, and declaring, the Shahada — the testimony that there is no god but Allah and that Muhammad ﷺ is His Messenger. There is no fee, no ceremony required, and no need to be in a mosque or to change your name. Islam is between you and Allah, and He welcomes everyone who turns to Him.',
+        keyVerse: {
+            arabic: 'لَا إِكْرَاهَ فِي الدِّينِ ۖ قَد تَّبَيَّنَ الرُّشْدُ مِنَ الْغَيِّ',
+            translation: 'There shall be no compulsion in [acceptance of] the religion. The right course has become clear from the wrong.',
+            reference: 'Quran 2:256',
+        },
+        sections: [
+            {
+                id: 'meaning',
+                title: 'What you are declaring',
+                steps: [
+                    { title: 'Lā ilāha illā Allāh', detail: 'There is nothing worthy of worship except Allah — the One Creator, who has no partner, no child and no equal. All worship, prayer and devotion is for Him alone.' },
+                    { title: 'Muḥammadun rasūlu Allāh', detail: 'Muhammad ﷺ is the final Messenger of Allah. You believe the Quran was revealed to him, and you follow his teaching and example.' },
+                ],
+                sources: ['Quran 112:1–4 — "Say, He is Allah, [who is] One…"', 'Quran 33:40 — "Muhammad is… the Messenger of Allah and the last of the prophets."'],
+            },
+            {
+                id: 'how',
+                title: 'How to take the Shahada',
+                steps: [
+                    { title: 'Believe it in your heart', detail: 'The Shahada is a declaration of what you sincerely believe. Understanding its meaning matters more than perfect pronunciation.' },
+                    { title: 'Say it aloud', detail: 'Say the words below in Arabic, then in your own language so you know what you are saying. If Arabic is difficult, say it slowly with someone who can guide you — saying it in your own language with sincere belief is still valid according to many scholars.' },
+                    { title: 'Witnesses are not a condition', detail: 'Your Islam is valid as soon as you say the Shahada sincerely, even alone. Many people choose to say it in front of Muslims at a mosque, which helps you join the community and receive support.' },
+                    { title: 'Certificate (optional)', detail: 'Mosques and Islamic centres can issue a certificate of Islam. It is not required religiously, but is often needed for official matters such as a Hajj or Umrah visa, or marriage paperwork in some countries.' },
+                ],
+                duas: [
+                    {
+                        title: 'The Shahada',
+                        arabic: 'أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا اللَّهُ، وَأَشْهَدُ أَنَّ مُحَمَّدًا رَسُولُ اللَّهِ',
+                        transliteration: 'Ashhadu an lā ilāha illā Allāh, wa ashhadu anna Muḥammadan rasūlu Allāh.',
+                        translation: 'I bear witness that there is no god but Allah, and I bear witness that Muhammad is the Messenger of Allah.',
+                        source: 'Sahih al-Bukhari & Sahih Muslim (Ibn ʿUmar): "Islam is built on five: testifying that there is no god but Allah and that Muhammad is the Messenger of Allah…"',
+                    },
+                ],
+            },
+            {
+                id: 'new-start',
+                title: 'A fresh start',
+                summary: 'Accepting Islam wipes away the sins that came before it, and good deeds done before Islam are not lost.',
+                steps: [
+                    { title: 'Your past is forgiven', detail: 'You begin with a clean record. Focus on moving forward rather than worrying about the past.' },
+                    { title: 'Bathe (ghusl)', detail: 'It is recommended to take a full bath upon accepting Islam; some scholars consider it obligatory. Rinse the mouth and nose and wash the whole body with the intention of purification.' },
+                    { title: 'Your family', detail: 'Islam commands kindness to parents and relatives even if they are not Muslim. Keep good relations with them.' },
+                ],
+                sources: [
+                    'Quran 8:38 — "Say to those who have disbelieved [that] if they cease, what has previously occurred will be forgiven for them."',
+                    'Sahih Muslim (ʿAmr ibn al-ʿĀṣ): "Do you not know that Islam wipes out what came before it?"',
+                    'Sahih al-Bukhari & Sahih Muslim (Ḥakīm ibn Ḥizām): "You have accepted Islam along with the good you did before."',
+                    'Sunan Abi Dawud, Jāmiʿ at-Tirmidhi & an-Nasāʾi (Qays ibn ʿĀṣim): the Prophet ﷺ told him to bathe with water and lote leaves when he accepted Islam.',
+                    'Quran 31:15 — "…but accompany them in [this] world with appropriate kindness."',
+                ],
+            },
+            {
+                id: 'belief',
+                title: 'The six articles of faith (Īmān)',
+                summary: 'When the angel Jibrīl asked the Prophet ﷺ about faith, he answered:',
+                steps: [
+                    { title: 'Belief in Allah', detail: 'The One God, with His perfect names and attributes.' },
+                    { title: 'His angels', detail: 'Created from light, they worship Allah and carry out His commands.' },
+                    { title: 'His books', detail: 'Including the Torah, the Psalms, the Gospel and the Quran — the final, preserved revelation.' },
+                    { title: 'His messengers', detail: 'From Adam to Nūḥ, Ibrāhīm, Mūsā, ʿĪsā and finally Muhammad, peace be upon them all.' },
+                    { title: 'The Last Day', detail: 'Resurrection, judgement, Paradise and Hell.' },
+                    { title: 'Divine decree (al-Qadar)', detail: 'Everything, good and bad, happens by the knowledge and will of Allah.' },
+                ],
+                sources: ['Sahih Muslim (ʿUmar ibn al-Khaṭṭāb) — the Hadith of Jibrīl.'],
+            },
+            {
+                id: 'pillars',
+                title: 'The five pillars of Islam',
+                steps: [
+                    { title: 'Shahādah', detail: 'The testimony of faith — which you have just made.' },
+                    { title: 'Ṣalāh', detail: 'Five daily prayers. This is the most important practice to learn first.' },
+                    { title: 'Zakāh', detail: 'Annual charity of 2.5% on savings above a threshold, once you are able.' },
+                    { title: 'Ṣawm', detail: 'Fasting the month of Ramadan.' },
+                    { title: 'Ḥajj', detail: 'Pilgrimage to Makkah once in a lifetime, for those who are able.' },
+                ],
+                sources: ['Sahih al-Bukhari & Sahih Muslim (Ibn ʿUmar): "Islam is built on five…"'],
+            },
+            {
+                id: 'first-steps',
+                title: 'Your first steps',
+                steps: [
+                    { title: 'Learn to pray', detail: 'Start with wudu (ablution) and the basic movements of prayer. Begin with al-Fatihah; until you have memorised it, you may say "Subḥān Allāh, al-ḥamdu lillāh, lā ilāha illā Allāh, Allāhu akbar, wa lā ḥawla wa lā quwwata illā billāh" in its place.' },
+                    { title: 'Go step by step', detail: 'You are not expected to know everything at once. Learn gradually and be patient with yourself — Allah does not burden a soul beyond what it can bear.' },
+                    { title: 'Find your community', detail: 'Visit your local mosque and ask about classes or mentors for new Muslims. Having a trusted friend to ask questions makes a big difference.' },
+                    { title: 'Read the Quran with meaning', detail: 'Read a translation in your language, starting with the short surahs. You can use the Quran section of this app.' },
+                ],
+                sources: [
+                    'Sunan Abi Dawud & an-Nasāʾi (ʿAbdullāh ibn Abī Awfā): a man who could not learn Quran was taught to say these words of dhikr in prayer.',
+                    'Quran 2:286 — "Allah does not charge a soul except [with that within] its capacity."',
+                ],
+            },
+        ],
+    },
+
     ramadan: {
         slug: 'ramadan',
         title: 'Ramadan',
@@ -506,7 +606,7 @@ export const GUIDES: Record<GuideSlug, Guide> = {
     },
 };
 
-export const GUIDE_ORDER: GuideSlug[] = ['ramadan', 'umrah', 'hajj'];
+export const GUIDE_ORDER: GuideSlug[] = ['shahada', 'ramadan', 'umrah', 'hajj'];
 
 export const GUIDE_DISCLAIMER =
     'This guide summarises Islamic practice as held by the majority of scholars, with references to the Quran and authentic hadith. Some details differ between scholars. It is not a substitute for learning from a qualified scholar — please verify rulings that apply to your situation, and follow the instructions of the Saudi authorities and your group leader during Hajj and Umrah.';

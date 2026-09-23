@@ -11,6 +11,7 @@ import PrayerCalendar from '@/components/PrayerCalendar';
 import SearchModal from '@/components/SearchModal';
 import OrnateFrame from '@/components/OrnateFrame';
 import OrnateDivider from '@/components/OrnateDivider';
+import AnnouncementBanner from '@/components/AnnouncementBanner';
 
 export default function Home() {
   const [showCalendar, setShowCalendar] = useState(false);
@@ -53,6 +54,8 @@ export default function Home() {
         </section>
 
         <OrnateDivider style={{ maxWidth: 320, margin: '0 auto 3rem' }} />
+
+        <AnnouncementBanner />
 
         {/* Spiritual Dashboard Section */}
         <section className="dashboard-section">

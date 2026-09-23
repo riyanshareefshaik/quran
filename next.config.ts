@@ -9,6 +9,11 @@ import type { NextConfig } from "next";
 //    so headers() and the TTS route are skipped/inapplicable in this mode.
 const isCapacitorBuild = process.env.CAPACITOR_BUILD === "true";
 
+// Allow the browser to talk to this project's own Supabase instance (admin
+// dashboard, feedback, reports, anonymous page counts) and nothing else.
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+const supabaseOrigin = /^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(supabaseUrl) ? supabaseUrl : "";
+
 const nextConfig: NextConfig = {
   ...(isCapacitorBuild
     ? {
@@ -45,7 +50,7 @@ const nextConfig: NextConfig = {
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https:",
               "media-src 'self' https:",
-              "connect-src 'self' https://api.quran.com https://verses.quran.com https://api.aladhan.com https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/",
+              `connect-src 'self' https://api.quran.com https://verses.quran.com https://api.aladhan.com https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/ ${supabaseOrigin}`.trim(),
               "frame-ancestors 'none'",
             ].join("; "),
           },

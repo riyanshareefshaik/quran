@@ -39,6 +39,14 @@ const SOURCES: SourceEntry[] = [
         note: 'Static JSON files served from the jsDelivr CDN. The app\'s Content Security Policy only allows requests to this dataset\'s path.',
     },
     {
+        name: 'Supabase (optional)',
+        used: true,
+        purpose: 'Stores feedback, reports of content mistakes, announcements, and anonymous page-view counts for the admin dashboard.',
+        endpoint: 'Your project’s *.supabase.co URL',
+        auth: 'Public anon key; all access enforced by row-level security',
+        note: 'Page counts store only the page path and date — no IP addresses, cookies or user identifiers. Admin accounts are the only logins.',
+    },
+    {
         name: 'AlQuran Cloud API',
         used: false,
         purpose: 'Ayah lookup, multiple text editions, juz/ruku/hizb/manzil divisions, and full-text search.',
