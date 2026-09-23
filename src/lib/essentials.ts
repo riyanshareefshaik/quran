@@ -9,14 +9,14 @@
 
 export type EssentialCategory = 'kalimas' | 'salawat' | 'prayer' | 'quran' | 'daily' | 'remembrance' | 'quranic-duas';
 
-export const ESSENTIAL_CATEGORIES: { id: EssentialCategory; label: string }[] = [
-    { id: 'kalimas', label: 'Six Kalimas' },
-    { id: 'salawat', label: 'Durood & Salawat' },
-    { id: 'prayer', label: 'In Prayer' },
-    { id: 'quran', label: 'Protection from the Quran' },
-    { id: 'remembrance', label: 'Dhikr & Istighfar' },
-    { id: 'daily', label: 'Daily Duas' },
-    { id: 'quranic-duas', label: 'Duas from the Quran' },
+export const ESSENTIAL_CATEGORIES: { id: EssentialCategory; label: string; short: string }[] = [
+    { id: 'kalimas', label: 'Six Kalimas', short: 'Kalimas' },
+    { id: 'salawat', label: 'Durood & Salawat', short: 'Durood' },
+    { id: 'prayer', label: 'In Prayer', short: 'Prayer' },
+    { id: 'quran', label: 'Protection from the Quran', short: 'Protection' },
+    { id: 'remembrance', label: 'Dhikr & Istighfar', short: 'Dhikr' },
+    { id: 'daily', label: 'Daily Duas', short: 'Daily' },
+    { id: 'quranic-duas', label: 'Duas from the Quran', short: 'Quranic Duas' },
 ];
 
 export interface EssentialSegment {
