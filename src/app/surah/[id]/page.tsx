@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { fetchChapterInfo, fetchVersesByChapter, fetchTranslationsList, Chapter, Verse, TranslationResource } from '@/lib/quran-api';
@@ -228,111 +229,6 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
             margin-top: 0.5rem;
         }
 
-        .translation-selector {
-            position: relative;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            min-width: 160px;
-            cursor: pointer;
-        }
-
-        .custom-dropdown-trigger {
-            padding: 0.5rem 1rem;
-            color: var(--gold-secondary);
-            font-size: 0.9rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 160px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .dropdown-arrow {
-            font-size: 0.7rem;
-            opacity: 0.7;
-        }
-
-        .custom-dropdown-menu {
-            position: absolute;
-            top: calc(100% + 10px);
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            z-index: 100;
-            padding: 0.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .dropdown-search {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            color: var(--off-white);
-            padding: 0.5rem;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            outline: none;
-        }
-
-        .dropdown-search:focus {
-            border-color: var(--gold-primary);
-        }
-
-        .dropdown-options {
-            max-height: 250px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        /* Custom Scrollbar for dropdown */
-        .dropdown-options::-webkit-scrollbar {
-            width: 4px;
-        }
-        .dropdown-options::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .dropdown-options::-webkit-scrollbar-thumb {
-            background: rgba(212, 175, 55, 0.3);
-            border-radius: 4px;
-        }
-
-        .dropdown-option {
-            background: transparent;
-            border: none;
-            color: var(--off-white);
-            padding: 0.5rem;
-            text-align: left;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 0.9rem;
-        }
-
-        .dropdown-option:hover {
-            background: rgba(212, 175, 55, 0.1);
-            color: var(--gold-primary);
-        }
-
-        .dropdown-option.selected {
-            background: rgba(212, 175, 55, 0.2);
-            color: var(--gold-primary);
-            font-weight: 500;
-        }
-
-        .no-results {
-            padding: 1rem;
-            text-align: center;
-            color: var(--gray-light);
-            font-size: 0.8rem;
-            opacity: 0.7;
-        }
         .reveal-btn {
             background: rgba(212, 175, 55, 0.1);
             border: 1px solid var(--gold-primary);
@@ -412,6 +308,26 @@ export default function SurahPage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const settingsBtnRef = React.useRef<HTMLButtonElement>(null);
+  const [popoverPos, setPopoverPos] = useState({ top: 0, right: 0 });
+
+  // The sticky header uses backdrop-filter, which traps position:fixed
+  // children inside it. The settings popover is therefore portalled to
+  // <body> and anchored to the button's on-screen position.
+  useEffect(() => {
+    if (!showSettings) return;
+    const place = () => {
+      const rect = settingsBtnRef.current?.getBoundingClientRect();
+      if (rect) setPopoverPos({ top: rect.bottom + 10, right: window.innerWidth - rect.right });
+    };
+    place();
+    window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, { passive: true });
+    return () => {
+      window.removeEventListener('resize', place);
+      window.removeEventListener('scroll', place);
+    };
+  }, [showSettings]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -420,9 +336,32 @@ export default function SurahPage() {
       }
     };
 
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsDropdownOpen(false);
+        setShowSettings(false);
+      }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
   }, []);
+
+  // Only one of the two header menus is open at a time, so the reading
+  // settings popover never lands on top of the language list.
+  const toggleLanguageMenu = () => {
+    setShowSettings(false);
+    setIsDropdownOpen(open => !open);
+  };
+
+  const toggleSettings = () => {
+    setIsDropdownOpen(false);
+    setShowSettings(open => !open);
+  };
 
   const handlePlayHeader = () => {
     if (isPlaying && currentChapterId === parseInt(id as string)) {
@@ -447,11 +386,14 @@ export default function SurahPage() {
       ]);
       setChapter(chapterData);
 
-      // Deduplicate translations: keep only one translation per language
+      // Deduplicate translations: keep only one translation per language,
+      // preferring the currently selected one so the picker can show its
+      // name (otherwise English resolved to a different translation id and
+      // the trigger fell back to "SELECT LANGUAGE").
       const uniqueLangs = new Map<string, TranslationResource>();
       transList.forEach(t => {
         const langCode = t.language_name.toLowerCase();
-        if (!uniqueLangs.has(langCode)) {
+        if (!uniqueLangs.has(langCode) || t.id === selectedTranslation) {
           uniqueLangs.set(langCode, t);
         }
       });
@@ -529,20 +471,31 @@ export default function SurahPage() {
         <div className="surah-title">
           <h1 className="gold-text font-display">{chapter?.name_complex}</h1>
           <div className="translation-selector relative" ref={dropdownRef}>
-            <div
+            <button
+              type="button"
               className="custom-dropdown-trigger"
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              onClick={toggleLanguageMenu}
+              aria-haspopup="listbox"
+              aria-expanded={isDropdownOpen}
+              aria-label="Translation language"
             >
-              {translations.find(t => t.id === selectedTranslation)?.language_name.toUpperCase() || 'SELECT LANGUAGE'}
-              <span className="dropdown-arrow">▼</span>
-            </div>
+              <span className="trigger-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z" />
+                </svg>
+                {translations.find(t => t.id === selectedTranslation)?.language_name.toUpperCase() || 'LANGUAGE'}
+              </span>
+              <span className="dropdown-arrow" aria-hidden="true">▼</span>
+            </button>
 
             {isDropdownOpen && (
-              <div className="custom-dropdown-menu glass-card">
+              <div className="custom-dropdown-menu" role="listbox" aria-label="Translation languages">
                 <input
                   type="text"
                   className="dropdown-search"
                   placeholder="Search language..."
+                  aria-label="Search languages"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onClick={(e) => e.stopPropagation()}
@@ -554,6 +507,9 @@ export default function SurahPage() {
                     .map(t => (
                       <button
                         key={t.id}
+                        type="button"
+                        role="option"
+                        aria-selected={selectedTranslation === t.id}
                         className={`dropdown-option ${selectedTranslation === t.id ? 'selected' : ''}`}
                         onClick={() => {
                           setSelectedTranslation(t.id);
@@ -574,7 +530,15 @@ export default function SurahPage() {
         </div>
         <div className="header-right">
           <div className="settings-wrapper">
-            <button className="settings-toggle-btn" onClick={() => setShowSettings(!showSettings)} aria-label="Reading settings">
+            <button
+              ref={settingsBtnRef}
+              type="button"
+              className="settings-toggle-btn"
+              onClick={toggleSettings}
+              aria-label="Reading settings"
+              aria-haspopup="dialog"
+              aria-expanded={showSettings}
+            >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="4" y1="7" x2="20" y2="7" />
                 <circle cx="9" cy="7" r="2.2" fill="currentColor" stroke="none" />
@@ -584,16 +548,31 @@ export default function SurahPage() {
                 <circle cx="11" cy="17" r="2.2" fill="currentColor" stroke="none" />
               </svg>
             </button>
-            {showSettings && (
+            {showSettings && createPortal(
               <>
                 <div className="settings-backdrop" onClick={() => setShowSettings(false)} />
-                <div className="reading-settings-popover glass-card">
+                <div
+                  className="reading-settings-popover"
+                  role="dialog"
+                  aria-label="Reading settings"
+                  style={{ '--pop-top': `${popoverPos.top}px`, '--pop-right': `${popoverPos.right}px` } as React.CSSProperties}
+                >
+                <div className="popover-header">
+                  <h2 className="popover-title">Reading Settings</h2>
+                  <button type="button" className="popover-close" onClick={() => setShowSettings(false)} aria-label="Close reading settings">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                      <path d="M6 6l12 12M18 6L6 18" />
+                    </svg>
+                  </button>
+                </div>
                 <div className="setting-row">
-                  <span className="setting-label">Arabic Font Size</span>
-                  <div className="size-toggles">
+                  <span className="setting-label">Arabic Size</span>
+                  <div className="size-toggles" role="group" aria-label="Arabic font size">
                     {(['small', 'medium', 'large', 'xlarge'] as FontSize[]).map(size => (
                       <button
                         key={size}
+                        type="button"
+                        aria-pressed={arabicFontSize === size}
                         className={`size-btn ${arabicFontSize === size ? 'active' : ''}`}
                         onClick={() => setArabicFontSize(size)}
                       >
@@ -603,8 +582,15 @@ export default function SurahPage() {
                   </div>
                 </div>
                 <div className="setting-row">
-                  <span className="setting-label">Comfort Mode</span>
+                  <span className="setting-label">
+                    Comfort Mode
+                    <span className="setting-hint">Softer contrast for longer reading</span>
+                  </span>
                   <button
+                    type="button"
+                    role="switch"
+                    aria-checked={readingComfortMode}
+                    aria-label="Comfort mode"
                     className={`toggle-switch ${readingComfortMode ? 'on' : 'off'}`}
                     onClick={toggleReadingComfortMode}
                   >
@@ -612,8 +598,15 @@ export default function SurahPage() {
                   </button>
                 </div>
                 <div className="setting-row">
-                  <span className="setting-label">Focus Mode</span>
+                  <span className="setting-label">
+                    Focus Mode
+                    <span className="setting-hint">Hide everything but the Arabic</span>
+                  </span>
                   <button
+                    type="button"
+                    role="switch"
+                    aria-checked={focusMode}
+                    aria-label="Focus mode"
                     className={`toggle-switch ${focusMode ? 'on' : 'off'}`}
                     onClick={toggleFocusMode}
                   >
@@ -621,7 +614,8 @@ export default function SurahPage() {
                   </button>
                 </div>
                 </div>
-              </>
+              </>,
+              document.body
             )}
           </div>
           <button className={`memo-toggle icon-only-toggle ${focusMode ? 'active' : ''}`} onClick={toggleFocusMode} title="Focus Mode" aria-label="Toggle focus mode">
@@ -786,47 +780,234 @@ export default function SurahPage() {
             outline-offset: 2px;
         }
 
-        .reading-settings-popover {
-            position: absolute;
-            top: 50px;
-            right: 0;
-            width: 300px;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.2rem;
-            background: var(--dark-green);
-            border: 1px solid var(--gold-primary);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-            border-radius: 12px;
-            z-index: 200;
+        .translation-selector {
+            position: relative;
+            display: inline-block;
+            margin-top: 0.6rem;
         }
 
+        .custom-dropdown-trigger {
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.6rem;
+            min-width: 170px;
+            min-height: 36px;
+            padding: 0.4rem 1rem;
+            background: rgba(4, 57, 39, 0.35);
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            border-radius: 20px;
+            color: var(--gold-primary);
+            font-family: inherit;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .custom-dropdown-trigger:hover,
+        .custom-dropdown-trigger[aria-expanded='true'] {
+            border-color: var(--gold-primary);
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .custom-dropdown-trigger:focus-visible {
+            outline: 2px solid var(--gold-primary);
+            outline-offset: 2px;
+        }
+
+        .trigger-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dropdown-arrow {
+            font-size: 0.6rem;
+            opacity: 0.8;
+            transition: transform 0.2s;
+        }
+
+        .custom-dropdown-trigger[aria-expanded='true'] .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .custom-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            z-index: 210;
+            padding: 0.6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            background: var(--popover-bg);
+            border: 1px solid var(--gold-primary);
+            border-radius: 12px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+            text-align: left;
+        }
+
+        .dropdown-search {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: var(--off-white);
+            padding: 0.5rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .dropdown-search:focus {
+            border-color: var(--gold-primary);
+        }
+
+        .dropdown-options {
+            max-height: 250px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        /* Custom Scrollbar for dropdown */
+        .dropdown-options::-webkit-scrollbar {
+            width: 4px;
+        }
+        .dropdown-options::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .dropdown-options::-webkit-scrollbar-thumb {
+            background: rgba(212, 175, 55, 0.3);
+            border-radius: 4px;
+        }
+
+        .dropdown-option {
+            font-family: inherit;
+            background: transparent;
+            border: none;
+            color: var(--off-white);
+            padding: 0.5rem;
+            text-align: left;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .dropdown-option:hover {
+            background: rgba(212, 175, 55, 0.1);
+            color: var(--gold-primary);
+        }
+
+        .dropdown-option.selected {
+            background: rgba(212, 175, 55, 0.2);
+            color: var(--gold-primary);
+            font-weight: 500;
+        }
+
+        .no-results {
+            padding: 1rem;
+            text-align: center;
+            color: var(--off-white);
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        .surah-container {
+            --popover-bg: #101a15;
+        }
+
+        .reading-settings-popover {
+            --popover-bg: #101a15;
+            position: fixed;
+            top: var(--pop-top);
+            right: var(--pop-right);
+            max-width: calc(100vw - 2rem);
+            width: 320px;
+            padding: 1.25rem 1.4rem 1.4rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.1rem;
+            background: var(--popover-bg);
+            border: 1px solid var(--gold-primary);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+            border-radius: 14px;
+            z-index: 1101;
+            animation: popover-in 0.18s ease-out;
+        }
+
+        @keyframes popover-in {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .popover-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .popover-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin: 0;
+        }
+
+        .popover-close {
+            background: none;
+            border: none;
+            color: var(--emerald-light);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .popover-close:hover {
+            color: var(--gold-primary);
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .popover-close:focus-visible {
+            outline: 2px solid var(--gold-primary);
+        }
+
+        /* Invisible on desktop, but still catches outside clicks to close. */
         .settings-backdrop {
-            display: none;
+            position: fixed;
+            inset: 0;
+            background: transparent;
+            z-index: 1100; /* above the sidebar and mobile tab bar */
         }
 
         @media (max-width: 640px) {
             .settings-backdrop {
-                display: block;
-                position: fixed;
-                inset: 0;
                 background: rgba(0, 0, 0, 0.7);
                 backdrop-filter: blur(3px);
-                z-index: 199;
             }
-        }
 
-        @media (max-width: 640px) {
             .reading-settings-popover {
-                position: fixed;
                 top: auto;
-                bottom: calc(70px + 1rem);
+                bottom: calc(80px + 1rem);
                 left: 50%;
                 right: auto;
-                transform: translateX(-50%);
                 width: calc(100vw - 2.5rem);
-                max-width: 340px;
+                max-width: 360px;
+                animation: none;
+                transform: translateX(-50%);
             }
         }
 
@@ -836,10 +1017,23 @@ export default function SurahPage() {
             align-items: center;
         }
 
+        .setting-row {
+            gap: 1rem;
+        }
+
         .setting-label {
             font-size: 0.9rem;
             color: var(--white);
             font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .setting-hint {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.5);
+            white-space: normal;
         }
 
         .size-toggles {
@@ -879,6 +1073,7 @@ export default function SurahPage() {
         }
 
         .toggle-switch {
+            flex-shrink: 0;
             width: 50px;
             height: 26px;
             border-radius: 13px;
@@ -888,6 +1083,11 @@ export default function SurahPage() {
             cursor: pointer;
             transition: all 0.3s;
             padding: 0;
+        }
+
+        .toggle-switch:focus-visible {
+            outline: 2px solid var(--gold-primary);
+            outline-offset: 2px;
         }
 
         .toggle-switch.on {
@@ -985,10 +1185,6 @@ export default function SurahPage() {
         .show-next-btn:focus-visible {
             outline: 2px solid var(--gold-secondary);
             outline-offset: 3px;
-        }
-
-        .translation-selector {
-            margin-top: 0.5rem;
         }
 
         .trans-select {

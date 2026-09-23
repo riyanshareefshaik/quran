@@ -45,7 +45,7 @@ const nextConfig: NextConfig = {
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https:",
               "media-src 'self' https:",
-              "connect-src 'self' https://api.quran.com https://verses.quran.com https://api.aladhan.com https://translate.google.com",
+              "connect-src 'self' https://api.quran.com https://verses.quran.com https://api.aladhan.com https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/",
               "frame-ancestors 'none'",
             ].join("; "),
           },

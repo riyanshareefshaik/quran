@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Only allow proxying audio from Quran.com's own CDN (any subdomain) —
-// never an arbitrary URL, to avoid this becoming an open proxy.
+// Only allow proxying audio from Quran.com's own CDNs — never an arbitrary
+// URL, to avoid this becoming an open proxy. Chapter recitations returned by
+// api.quran.com are served from download.quranicaudio.com.
 function isAllowedHost(hostname: string): boolean {
-    return hostname === 'quran.com' || hostname.endsWith('.quran.com') || hostname === 'qurancdn.com' || hostname.endsWith('.qurancdn.com');
+    return hostname === 'quran.com' || hostname.endsWith('.quran.com') ||
+        hostname === 'qurancdn.com' || hostname.endsWith('.qurancdn.com') ||
+        hostname === 'download.quranicaudio.com';
 }
+
+// Longest full-surah recitations are well under this.
+const MAX_AUDIO_BYTES = 200 * 1024 * 1024;
 
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 20;
@@ -34,7 +40,7 @@ export async function GET(request: NextRequest) {
     }
 
     const audioUrl = request.nextUrl.searchParams.get('url');
-    const filename = request.nextUrl.searchParams.get('filename') || 'surah.mp3';
+    const filename = (request.nextUrl.searchParams.get('filename') || 'surah.mp3').slice(0, 100);
 
     if (!audioUrl) {
         return new NextResponse('Missing url parameter', { status: 400 });
@@ -47,21 +53,41 @@ export async function GET(request: NextRequest) {
         return new NextResponse('Invalid url', { status: 400 });
     }
 
+    // HTTPS only, no embedded credentials, no non-default ports.
+    if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.port) {
+        return new NextResponse('URL not allowed', { status: 403 });
+    }
+
     if (!isAllowedHost(parsed.hostname)) {
         return new NextResponse('URL host not allowed', { status: 403 });
     }
 
     try {
-        const upstream = await fetch(parsed.toString());
+        // Don't follow redirects: an allowed host redirecting elsewhere would
+        // otherwise turn this route into a proxy for arbitrary URLs.
+        const upstream = await fetch(parsed.toString(), {
+            redirect: 'error',
+            signal: AbortSignal.timeout(30_000),
+        });
         if (!upstream.ok || !upstream.body) {
             return new NextResponse('Failed to fetch audio', { status: 502 });
+        }
+
+        const contentType = upstream.headers.get('content-type') || 'audio/mpeg';
+        if (!contentType.startsWith('audio/')) {
+            return new NextResponse('Upstream did not return audio', { status: 502 });
+        }
+
+        const contentLength = Number(upstream.headers.get('content-length') || 0);
+        if (contentLength > MAX_AUDIO_BYTES) {
+            return new NextResponse('Audio file too large', { status: 413 });
         }
 
         // Server-to-server fetch has no CORS restriction, so this always
         // succeeds where a direct browser fetch() of the CDN URL wouldn't.
         return new NextResponse(upstream.body, {
             headers: {
-                'Content-Type': upstream.headers.get('content-type') || 'audio/mpeg',
+                'Content-Type': contentType,
                 'Content-Disposition': `attachment; filename="${filename.replace(/[^a-zA-Z0-9._-]/g, '_')}"`,
                 'Cache-Control': 'no-store',
             },

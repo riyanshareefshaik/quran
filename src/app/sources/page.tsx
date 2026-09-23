@@ -31,6 +31,14 @@ const SOURCES: SourceEntry[] = [
         auth: 'Public, no API key required',
     },
     {
+        name: 'Hadith API (open-source dataset)',
+        used: true,
+        purpose: 'Hadith text in Arabic with translations and scholars\' gradings for Sahih al-Bukhari, Sahih Muslim, the four Sunan, Muwatta Malik and the Forty Hadith collections.',
+        endpoint: 'cdn.jsdelivr.net/gh/fawazahmed0/hadith-api',
+        auth: 'Public, no API key required',
+        note: 'Static JSON files served from the jsDelivr CDN. The app\'s Content Security Policy only allows requests to this dataset\'s path.',
+    },
+    {
         name: 'AlQuran Cloud API',
         used: false,
         purpose: 'Ayah lookup, multiple text editions, juz/ruku/hizb/manzil divisions, and full-text search.',

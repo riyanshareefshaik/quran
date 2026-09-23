@@ -1,66 +1,30 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import OrnateFrame from '@/components/OrnateFrame';
 import OrnateDivider from '@/components/OrnateDivider';
-
-interface EssentialItem {
-    id: string;
-    title: string;
-    arabicTitle: string;
-    description: string;
-    isVerse: boolean;
-    verseKey?: string; // If it's a Quranic verse, we can link/play it
-    content: Array<{
-        arabic: string;
-        transliteration?: string;
-        translation: string;
-    }>;
-}
-
-const ESSENTIALS: EssentialItem[] = [
-    {
-        id: 'ayatul-kursi',
-        title: 'Ayatul Kursi',
-        arabicTitle: 'آيَةُ الْكُرْسِيِّ',
-        description: 'The Verse of the Throne (Surah Al-Baqarah, 2:255). Recite for protection after mandatory prayers and before sleeping.',
-        isVerse: true,
-        verseKey: '2:255',
-        content: [
-            {
-                arabic: 'ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ ٱلْحَىُّ ٱلْقَيُّومُ ۚ لَا تَأْخُذُهُۥ سِنَةٌ وَلَا نَوْمٌ ۚ لَّهُۥ مَا فِى ٱلسَّمَٰوَٰتِ وَمَا فِى ٱلْأَرْضِ ۗ مَن ذَا ٱلَّذِى يَشْفَعُ عِندَهُۥٓ إِلَّا بِإِذْنِهِۦ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَىْءٍ مِّنْ عِلْمِهِۦٓ إِلَّا بِمَا شَآءَ ۚ وَسِعَ كُرْسِيُّهُ ٱلسَّمَٰوَٰتِ وَٱلْأَرْضَ ۖ وَلَا يَـُٔودُهُۥ حِفْظُهُمَا ۚ وَهُوَ ٱلْعَلِىُّ ٱلْعَظِيمُ',
-                transliteration: 'Allahu laaa ilaaha illaa Huwal Hayyul Qayyuum; laa ta\'khuzuhoo sinatunw wa laa nawm; lahoo maa fis-samaawaati wa maa fil ard; man zallazee yashfa\'u indahooo illaa bi-iznih; ya\'lamu maa baina aideehim wa maa khalfahum; wa laa yuheetoona bishai\'im min \'ilmiheee illaa bimaa shaaa\'; wasi\'a kursiyyuhus samaawaati wal arda wa laa ya\'ooduhoo hifzuhumaa; wa Huwal Aliyyul \'Azeem',
-                translation: 'Allah! There is no deity except Him, the Ever-Living, the Sustainer of [all] existence. Neither drowsiness overtakes Him nor sleep. To Him belongs whatever is in the heavens and whatever is on the earth. Who is it that can intercede with Him except by His permission? He knows what is [presently] before them and what will be after them, and they encompass not a thing of His knowledge except for what He wills. His Kursi extends over the heavens and the earth, and their preservation tires Him not. And He is the Most High, the Most Great.'
-            }
-        ]
-    },
-    {
-        id: 'attahiyat',
-        title: 'Attahiyat (Tashahhud)',
-        arabicTitle: 'التَّحِيَّاتُ',
-        description: 'The declaration of faith recited while sitting in prayer.',
-        isVerse: false,
-        content: [
-            {
-                arabic: 'التَّحِيَّاتُ لِلَّهِ وَالصَّلَوَاتُ وَالطَّيِّبَاتُ، السَّلَامُ عَلَيْكَ أَيُّهَا النَّبِيُّ وَرَحْمَةُ اللَّهِ وَبَرَكَاتُهُ، السَّلَامُ عَلَيْنَا وَعَلَى عِبَادِ اللَّهِ الصَّالِحِينَ، أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ.',
-                transliteration: 'At-tahiyyaatu lillaahi was-salawaatu wat-tayyibaat. As-salaamu \'alayka ayyuhan-Nabiyyu wa rahmatullaahi wa barakaatuh. As-salaamu \'alaynaa wa \'alaa \'ibaadillaahis-saaliheen. Ash-hadu an laa ilaaha illallaah, wa ash-hadu anna Muhammadan \'abduhu wa rasooluh.',
-                translation: 'All greetings of humility are for Allah, and all prayers and goodness. Peace be upon you, O Prophet, and the mercy of Allah and His blessings. Peace be upon us and upon the righteous slaves of Allah. I bear witness that there is none worthy of worship but Allah, and I bear witness that Muhammad is His slave and His Messenger.'
-            }
-        ]
-    }
-];
+import { ESSENTIALS, ESSENTIAL_CATEGORIES, EssentialCategory } from '@/lib/essentials';
 
 export default function EssentialsPage() {
     const [selectedItem, setSelectedItem] = useState<string | null>(null);
+    const [category, setCategory] = useState<EssentialCategory | 'all'>('all');
+    const [query, setQuery] = useState('');
 
     const toggleItem = (id: string) => {
-        if (selectedItem === id) {
-            setSelectedItem(null);
-        } else {
-            setSelectedItem(id);
-        }
+        setSelectedItem(current => (current === id ? null : id));
     };
+
+    const visible = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        return ESSENTIALS.filter(item =>
+            (category === 'all' || item.category === category) &&
+            (!q ||
+                item.title.toLowerCase().includes(q) ||
+                item.description.toLowerCase().includes(q) ||
+                item.arabicTitle.includes(query.trim()))
+        );
+    }, [category, query]);
 
     return (
         <div className="container">
@@ -72,50 +36,75 @@ export default function EssentialsPage() {
                 <OrnateFrame style={{ background: 'radial-gradient(ellipse at center, rgba(212, 175, 55, 0.05), transparent 70%)', marginBottom: '2rem' }}>
                     <div className="title-area">
                         <h1 className="gold-text font-display">Islamic Essentials</h1>
-                        <p className="subtitle">Daily Adhkar & Important Prayers</p>
+                        <p className="subtitle">Durood, Adhkar &amp; Daily Duas</p>
                     </div>
                 </OrnateFrame>
 
-                <OrnateDivider style={{ maxWidth: 320, margin: '0 auto 3rem' }} />
+                <OrnateDivider style={{ maxWidth: 320, margin: '0 auto 2rem' }} />
+
+                <div className="filters">
+                    <input
+                        type="search"
+                        className="essentials-search"
+                        placeholder="Search duas, e.g. durood, sleep, travel…"
+                        aria-label="Search essentials"
+                        value={query}
+                        onChange={e => setQuery(e.target.value)}
+                    />
+                    <div className="category-chips" role="group" aria-label="Filter by category">
+                        {[{ id: 'all' as const, label: 'All' }, ...ESSENTIAL_CATEGORIES].map(c => (
+                            <button
+                                key={c.id}
+                                type="button"
+                                className={`category-chip ${category === c.id ? 'active' : ''}`}
+                                aria-pressed={category === c.id}
+                                onClick={() => setCategory(c.id)}
+                            >
+                                {c.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
 
                 <div className="essentials-list">
-                    {ESSENTIALS.map((item) => (
+                    {visible.length === 0 && <p className="empty">Nothing matches your search.</p>}
+                    {visible.map((item) => {
+                        const isOpen = selectedItem === item.id;
+                        return (
                         <div
                             key={item.id}
-                            className={`glass-card essential-card ${selectedItem === item.id ? 'expanded' : ''}`}
+                            className={`glass-card essential-card ${isOpen ? 'expanded' : ''}`}
                         >
-                            <div
+                            <button
+                                type="button"
                                 className="essential-header"
                                 onClick={() => toggleItem(item.id)}
+                                aria-expanded={isOpen}
                             >
                                 <div className="essential-title-group">
                                     <h2 className="essential-title font-display">{item.title}</h2>
-                                    <h3 className="essential-arabic amiri-text">{item.arabicTitle}</h3>
+                                    <h3 className="essential-arabic amiri-text" lang="ar">{item.arabicTitle}</h3>
                                 </div>
-                                <div className="essential-actions">
-                                    {item.isVerse && item.verseKey && (
-                                        <Link
-                                            href={`/surah/${item.verseKey.split(':')[0]}`}
-                                            className="context-link"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            View in Quran →
-                                        </Link>
-                                    )}
-                                    <span className="expand-icon">{selectedItem === item.id ? '−' : '+'}</span>
-                                </div>
-                            </div>
+                                <span className="expand-icon" aria-hidden="true">{isOpen ? '−' : '+'}</span>
+                            </button>
 
-                            {selectedItem === item.id && (
+                            {isOpen && (
                                 <div className="essential-body">
                                     <div className="essential-description">
                                         <p>{item.description}</p>
+                                        <p className="essential-source">Source: {item.source}</p>
+                                        {item.verseKey && (
+                                            <Link href={`/surah/${item.verseKey.split(':')[0]}`} className="context-link">
+                                                View in Quran →
+                                            </Link>
+                                        )}
                                     </div>
 
                                     <div className="essential-segments">
                                         {item.content.map((segment, index) => (
                                             <div key={index} className="essential-segment">
-                                                <p className="arabic-segment amiri-text">{segment.arabic}</p>
+                                                {segment.note && <span className="segment-note">{segment.note}</span>}
+                                                <p className="arabic-segment amiri-text" dir="rtl" lang="ar">{segment.arabic}</p>
 
                                                 {segment.transliteration && (
                                                     <div className="transliteration-box">
@@ -134,7 +123,8 @@ export default function EssentialsPage() {
                                 </div>
                             )}
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </main>
 
@@ -201,7 +191,100 @@ export default function EssentialsPage() {
                     box-shadow: 0 4px 20px rgba(212, 175, 55, 0.15);
                 }
 
+                .filters {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1rem;
+                    margin-bottom: 2rem;
+                }
+
+                .essentials-search {
+                    width: 100%;
+                    background: rgba(0, 0, 0, 0.3);
+                    border: 1px solid rgba(212, 175, 55, 0.3);
+                    color: var(--off-white);
+                    padding: 0.8rem 1rem;
+                    border-radius: 10px;
+                    font-family: inherit;
+                    font-size: 0.95rem;
+                    outline: none;
+                }
+
+                .essentials-search:focus {
+                    border-color: var(--gold-primary);
+                }
+
+                .category-chips {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.5rem;
+                }
+
+                .category-chip {
+                    font-family: inherit;
+                    font-size: 0.8rem;
+                    color: var(--emerald-light);
+                    background: rgba(4, 57, 39, 0.25);
+                    border: 1px solid rgba(22, 125, 79, 0.5);
+                    border-radius: 20px;
+                    padding: 0.45rem 1rem;
+                    min-height: 34px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+
+                .category-chip:hover {
+                    color: var(--gold-primary);
+                    border-color: var(--gold-primary);
+                }
+
+                .category-chip.active {
+                    background: var(--gold-primary);
+                    border-color: var(--gold-primary);
+                    color: var(--matte-black);
+                    font-weight: 600;
+                }
+
+                .category-chip:focus-visible,
+                .essential-header:focus-visible {
+                    outline: 2px solid var(--gold-primary);
+                    outline-offset: 2px;
+                }
+
+                .empty {
+                    text-align: center;
+                    color: var(--emerald-light);
+                    padding: 2rem 0;
+                }
+
+                .essential-source {
+                    margin-top: 0.6rem;
+                    font-size: 0.8rem;
+                    color: rgba(255, 255, 255, 0.55);
+                }
+
+                .essential-description :global(.context-link) {
+                    display: inline-block;
+                    margin-top: 0.8rem;
+                }
+
+                .segment-note {
+                    align-self: flex-start;
+                    font-size: 0.72rem;
+                    letter-spacing: 1px;
+                    text-transform: uppercase;
+                    color: var(--gold-primary);
+                    border: 1px solid rgba(212, 175, 55, 0.4);
+                    border-radius: 20px;
+                    padding: 0.2rem 0.7rem;
+                }
+
                 .essential-header {
+                    width: 100%;
+                    border: none;
+                    color: inherit;
+                    font-family: inherit;
+                    text-align: left;
                     padding: 1.5rem 2rem;
                     cursor: pointer;
                     display: flex;
@@ -239,7 +322,7 @@ export default function EssentialsPage() {
                     gap: 1.5rem;
                 }
 
-                .context-link {
+                :global(.context-link) {
                     font-size: 0.85rem;
                     color: var(--emerald-light);
                     padding: 0.4rem 0.8rem;
@@ -248,7 +331,7 @@ export default function EssentialsPage() {
                     transition: all 0.3s;
                 }
 
-                .context-link:hover {
+                :global(.context-link:hover) {
                     background: var(--gold-primary);
                     color: var(--matte-black);
                     border-color: var(--gold-primary);
@@ -327,7 +410,7 @@ export default function EssentialsPage() {
 
                 .translation-text {
                     font-size: 1.05rem;
-                    color: var(--gray-light);
+                    color: var(--off-white);
                     line-height: 1.6;
                 }
 
@@ -338,13 +421,13 @@ export default function EssentialsPage() {
 
                 @media (max-width: 768px) {
                     .essential-header {
-                        flex-direction: column;
-                        align-items: flex-start;
-                        gap: 1rem;
+                        padding: 1.2rem 1.25rem;
                     }
-                    .essential-actions {
-                        width: 100%;
-                        justify-content: space-between;
+                    .essential-body {
+                        padding: 0 1.25rem 1.5rem;
+                    }
+                    .arabic-segment {
+                        font-size: 1.7rem;
                     }
                     .essential-title-group {
                         flex-direction: column;
