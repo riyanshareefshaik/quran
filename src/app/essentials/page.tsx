@@ -53,15 +53,17 @@ export default function EssentialsPage() {
                         onChange={e => setQuery(e.target.value)}
                     />
                     <div className="category-chips" role="group" aria-label="Filter by category">
-                        {[{ id: 'all' as const, label: 'All' }, ...ESSENTIAL_CATEGORIES].map(c => (
+                        {[{ id: 'all' as const, label: 'All', short: 'All' }, ...ESSENTIAL_CATEGORIES].map(c => (
                             <button
                                 key={c.id}
                                 type="button"
                                 className={`category-chip ${category === c.id ? 'active' : ''}`}
                                 aria-pressed={category === c.id}
+                                title={c.label}
                                 onClick={() => setCategory(c.id)}
                             >
-                                {c.label}
+                                {c.short}
+                                <span className="chip-count">{c.id === 'all' ? ESSENTIALS.length : ESSENTIALS.filter(i => i.category === c.id).length}</span>
                             </button>
                         ))}
                     </div>
@@ -69,66 +71,71 @@ export default function EssentialsPage() {
 
                 <div className="essentials-list">
                     {visible.length === 0 && <p className="empty">Nothing matches your search.</p>}
-                    {visible.map((item) => {
-                        const isOpen = selectedItem === item.id;
-                        return (
-                        <div
-                            key={item.id}
-                            className={`glass-card essential-card ${isOpen ? 'expanded' : ''}`}
-                        >
-                            <button
-                                type="button"
-                                className="essential-header"
-                                onClick={() => toggleItem(item.id)}
-                                aria-expanded={isOpen}
-                            >
-                                <div className="essential-title-group">
-                                    <h2 className="essential-title font-display">{item.title}</h2>
-                                    <h3 className="essential-arabic amiri-text" lang="ar">{item.arabicTitle}</h3>
-                                </div>
-                                <span className="expand-icon" aria-hidden="true">{isOpen ? '−' : '+'}</span>
-                            </button>
-
-                            {isOpen && (
-                                <div className="essential-body">
-                                    <div className="essential-description">
-                                        <p>{item.description}</p>
-                                        <p className="essential-source">Source: {item.source}</p>
-                                        <div className="essential-links">
-                                            {item.verseKey && (
-                                                <Link href={`/surah/${item.verseKey.split(':')[0]}`} className="context-link">
-                                                    View in Quran →
-                                                </Link>
-                                            )}
-                                            <ReportIssueButton contentType="essential" contentRef={item.title} label="Report a mistake" />
-                                        </div>
-                                    </div>
-
-                                    <div className="essential-segments">
-                                        {item.content.map((segment, index) => (
-                                            <div key={index} className="essential-segment">
-                                                {segment.note && <span className="segment-note">{segment.note}</span>}
-                                                <p className="arabic-segment amiri-text" dir="rtl" lang="ar">{segment.arabic}</p>
-
-                                                {segment.transliteration && (
-                                                    <div className="transliteration-box">
-                                                        <span className="label">Pronunciation:</span>
-                                                        <p className="transliteration-text">{segment.transliteration}</p>
-                                                    </div>
-                                                )}
-
-                                                <div className="translation-box">
-                                                    <span className="label">Meaning:</span>
-                                                    <p className="translation-text">{segment.translation}</p>
+                    {ESSENTIAL_CATEGORIES.filter(c => visible.some(i => i.category === c.id)).map(cat => (
+                        <section key={cat.id} className="category-group" aria-label={cat.label}>
+                            <h2 className="group-heading">{cat.label}</h2>
+                            {visible.filter(i => i.category === cat.id).map((item) => {
+                                const isOpen = selectedItem === item.id;
+                                return (
+                                <div
+                                    key={item.id}
+                                    className={`glass-card essential-card ${isOpen ? 'expanded' : ''}`}
+                                >
+                                    <button
+                                        type="button"
+                                        className="essential-header"
+                                        onClick={() => toggleItem(item.id)}
+                                        aria-expanded={isOpen}
+                                    >
+                                        <span className="essential-title-group">
+                                            <span className="essential-title font-display">{item.title}</span>
+                                            <span className="essential-meta">{item.content.length > 1 ? `${item.content.length} parts · ` : ''}{item.source.split(/[·(]/)[0].trim()}</span>
+                                        </span>
+                                        <span className="essential-arabic amiri-text" lang="ar" dir="rtl">{item.arabicTitle}</span>
+                                        <span className="expand-icon" aria-hidden="true">{isOpen ? '−' : '+'}</span>
+                                    </button>
+                                    {isOpen && (
+                                        <div className="essential-body">
+                                            <div className="essential-description">
+                                                <p>{item.description}</p>
+                                                <p className="essential-source">Source: {item.source}</p>
+                                                <div className="essential-links">
+                                                    {item.verseKey && (
+                                                        <Link href={`/surah/${item.verseKey.split(':')[0]}`} className="context-link">
+                                                            View in Quran →
+                                                        </Link>
+                                                    )}
+                                                    <ReportIssueButton contentType="essential" contentRef={item.title} label="Report a mistake" />
                                                 </div>
                                             </div>
-                                        ))}
-                                    </div>
+
+                                            <div className="essential-segments">
+                                                {item.content.map((segment, index) => (
+                                                    <div key={index} className="essential-segment">
+                                                        {segment.note && <span className="segment-note">{segment.note}</span>}
+                                                        <p className="arabic-segment amiri-text" dir="rtl" lang="ar">{segment.arabic}</p>
+
+                                                        {segment.transliteration && (
+                                                            <div className="transliteration-box">
+                                                                <span className="label">Pronunciation:</span>
+                                                                <p className="transliteration-text">{segment.transliteration}</p>
+                                                            </div>
+                                                        )}
+
+                                                        <div className="translation-box">
+                                                            <span className="label">Meaning:</span>
+                                                            <p className="translation-text">{segment.translation}</p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
-                        );
-                    })}
+                                );
+                            })}
+                        </section>
+                    ))}
                 </div>
             </main>
 
@@ -181,7 +188,7 @@ export default function EssentialsPage() {
                 .essentials-list {
                     display: flex;
                     flex-direction: column;
-                    gap: 1.5rem;
+                    gap: 0.75rem;
                 }
 
                 .essential-card {
@@ -220,8 +227,42 @@ export default function EssentialsPage() {
 
                 .category-chips {
                     display: flex;
-                    flex-wrap: wrap;
                     gap: 0.5rem;
+                    overflow-x: auto;
+                    scrollbar-width: none;
+                    padding-bottom: 2px;
+                    -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent);
+                    mask-image: linear-gradient(90deg, #000 92%, transparent);
+                }
+
+                .category-chips::-webkit-scrollbar {
+                    display: none;
+                }
+
+                .chip-count {
+                    margin-left: 0.45rem;
+                    font-size: 0.7rem;
+                    opacity: 0.7;
+                    font-variant-numeric: tabular-nums;
+                }
+
+                .category-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.75rem;
+                }
+
+                .category-group + .category-group {
+                    margin-top: 1.25rem;
+                }
+
+                .group-heading {
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    letter-spacing: 2px;
+                    text-transform: uppercase;
+                    color: var(--gold-primary);
+                    margin: 0 0 0.1rem 0.25rem;
                 }
 
                 .category-chip {
@@ -233,6 +274,8 @@ export default function EssentialsPage() {
                     border-radius: 20px;
                     padding: 0.45rem 1rem;
                     min-height: 34px;
+                    white-space: nowrap;
+                    flex-shrink: 0;
                     cursor: pointer;
                     transition: all 0.2s;
                 }
@@ -292,11 +335,12 @@ export default function EssentialsPage() {
                     color: inherit;
                     font-family: inherit;
                     text-align: left;
-                    padding: 1.5rem 2rem;
+                    padding: 1.1rem 1.5rem;
                     cursor: pointer;
-                    display: flex;
-                    justify-content: space-between;
+                    display: grid;
+                    grid-template-columns: minmax(0, 1fr) auto 32px;
                     align-items: center;
+                    gap: 1.25rem;
                     background: transparent;
                 }
 
@@ -306,21 +350,33 @@ export default function EssentialsPage() {
 
                 .essential-title-group {
                     display: flex;
-                    align-items: center;
-                    gap: 1.5rem;
+                    flex-direction: column;
+                    gap: 0.2rem;
+                    min-width: 0;
                 }
 
                 .essential-title {
-                    font-size: 1.4rem;
-                    margin: 0;
+                    font-size: 1.15rem;
                     color: var(--white);
                     font-weight: 600;
+                    line-height: 1.3;
+                }
+
+                .essential-meta {
+                    font-size: 0.75rem;
+                    color: rgba(255, 255, 255, 0.5);
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
 
                 .essential-arabic {
-                    font-size: 1.8rem;
-                    margin: 0;
+                    font-family: var(--font-amiri), 'Amiri', serif;
+                    font-size: 1.6rem;
+                    line-height: 1.6;
                     color: var(--gold-primary);
+                    text-align: right;
+                    white-space: nowrap;
                 }
 
                 .essential-actions {
@@ -345,11 +401,22 @@ export default function EssentialsPage() {
                 }
 
                 .expand-icon {
-                    font-size: 1.5rem;
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    border: 1px solid rgba(212, 175, 55, 0.35);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.1rem;
                     color: var(--gold-primary);
-                    font-weight: 300;
-                    width: 24px;
-                    text-align: center;
+                    transition: background 0.2s, border-color 0.2s;
+                }
+
+                .essential-card.expanded .expand-icon,
+                .essential-header:hover .expand-icon {
+                    background: rgba(212, 175, 55, 0.12);
+                    border-color: var(--gold-primary);
                 }
 
                 .essential-body {
@@ -428,21 +495,24 @@ export default function EssentialsPage() {
 
                 @media (max-width: 768px) {
                     .essential-header {
-                        padding: 1.2rem 1.25rem;
+                        padding: 1rem 1.1rem;
+                        grid-template-columns: minmax(0, 1fr) 32px;
+                        grid-template-areas: 'title icon' 'arabic arabic';
+                        row-gap: 0.4rem;
                     }
+                    .essential-title-group { grid-area: title; }
+                    .essential-title { font-size: 1rem; }
+                    .expand-icon { grid-area: icon; }
                     .essential-body {
                         padding: 0 1.25rem 1.5rem;
                     }
                     .arabic-segment {
                         font-size: 1.7rem;
                     }
-                    .essential-title-group {
-                        flex-direction: column;
-                        align-items: flex-start;
-                        gap: 0.5rem;
-                    }
                     .essential-arabic {
-                        font-size: 1.5rem;
+                        grid-area: arabic;
+                        font-size: 1.4rem;
+                        white-space: normal;
                     }
                 }
             `}</style>
