@@ -78,7 +78,7 @@ const AyahShareModal: React.FC<AyahShareModalProps> = ({ verse, onClose }) => {
                             <button
                                 key={t}
                                 className={`theme-btn ${theme === t ? 'active' : ''}`}
-                                onClick={() => setTheme(t as any)}
+                                onClick={() => setTheme(t as keyof typeof themes)}
                                 style={{ background: themes[t as keyof typeof themes].bg }}
                             ></button>
                         ))}

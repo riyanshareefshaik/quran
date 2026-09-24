@@ -65,8 +65,8 @@ export default function RootLayout({
         <SettingsProvider>
           <ProgressProvider>
             <BookmarkProvider>
-              <AuthProvider>
               <AudioProvider>
+              <AuthProvider>
                 <Sidebar />
                 <div className="main-layout-content">
                   {children}
@@ -74,8 +74,8 @@ export default function RootLayout({
                 <AudioPlayer />
                 <PageViewTracker />
                 <PrayerAlertsManager />
-              </AudioProvider>
               </AuthProvider>
+              </AudioProvider>
             </BookmarkProvider>
           </ProgressProvider>
         </SettingsProvider>

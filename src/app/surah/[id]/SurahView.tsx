@@ -8,7 +8,10 @@ import { fetchChapterInfo, fetchVersesByChapter, fetchTranslationsList, cleanTra
 import { useAudio } from '@/context/AudioContext';
 import { useProgress } from '@/context/ProgressContext';
 import { useSettings, FontSize } from '@/context/SettingsContext';
+import { useAuth } from '@/context/AuthContext';
+import { logReading } from '@/lib/reading-history';
 import AyahShareModal from '@/components/AyahShareModal';
+import AyahNotesModal from '@/components/AyahNotesModal';
 import OrnateDivider from '@/components/OrnateDivider';
 import ReportIssueButton from '@/components/ReportIssueButton';
 import ReciterPicker from '@/components/ReciterPicker';
@@ -22,11 +25,12 @@ interface VerseCardProps {
   onShare: (verse: Verse) => void;
   onPlay: (verse: Verse) => void;
   onTafsir: (verse: Verse) => void;
+  onSave: (verse: Verse) => void;
   onRead?: () => void;
   nowPlaying?: boolean;
 }
 
-const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, focusMode, onShare, onPlay, onTafsir, onRead, nowPlaying }) => {
+const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, focusMode, onShare, onPlay, onTafsir, onSave, onRead, nowPlaying }) => {
   const [showTranslation, setShowTranslation] = useState(!isMemoMode);
   const cardRef = React.useRef<HTMLDivElement>(null);
 
@@ -78,6 +82,7 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
             <div className="verse-actions">
               <button className="premium-icon-btn" onClick={() => onPlay(verse)}>Play</button>
               <button className="premium-icon-btn" onClick={() => onTafsir(verse)}>Tafsir</button>
+              <button className="premium-icon-btn" onClick={() => onSave(verse)}>Save</button>
               <button className="premium-icon-btn" onClick={() => onShare(verse)}>Share</button>
               <span className="report-slot"><ReportIssueButton contentType="quran" contentRef={`Quran ${verse.verse_key}`} /></span>
             </div>
@@ -101,7 +106,7 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
                 <div className="translation-content">
                   <div className="translation-text-wrapper">
                     {verse.translations && verse.translations.length > 0 ? (
-                      verse.translations.map((t: any) => (
+                      verse.translations.map((t) => (
                         <p key={t.id} className="t-text">
                           {cleanTranslation(t.text)}
                         </p>
@@ -334,6 +339,7 @@ export default function SurahView() {
   const { playChapter, playAyah, isPlaying, currentChapterId, togglePlay, currentVerseKey } = useAudio();
   const { arabicFontSize, setArabicFontSize, readingComfortMode, toggleReadingComfortMode, focusMode, toggleFocusMode } = useSettings();
   const { markAyahRead, setLastRead } = useProgress();
+  const { session } = useAuth();
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -342,6 +348,7 @@ export default function SurahView() {
   const [memoMode, setMemoMode] = useState(false);
   const [visibleVerses, setVisibleVerses] = useState(1);
   const [shareVerse, setShareVerse] = useState<Verse | null>(null);
+  const [saveVerse, setSaveVerse] = useState<Verse | null>(null);
   const [tafsirVerse, setTafsirVerse] = useState<string | null>(null);
   const closeTafsir = React.useCallback(() => setTafsirVerse(null), []);
   const [showSettings, setShowSettings] = useState(false);
@@ -701,16 +708,17 @@ export default function SurahView() {
             isBlurred={memoMode && index === visibleVerses} // Blur the very last item in memo mode
             focusMode={focusMode}
             onShare={(v) => setShareVerse(v)}
+            onSave={(v) => setSaveVerse(v)}
             onTafsir={(v) => setTafsirVerse(v.verse_key)}
             nowPlaying={currentVerseKey === verse.verse_key}
-            onPlay={(v) => playAyah(
-              v.verse_key,
-              chapter?.id || 0,
-              chapter?.name_complex || ''
-            )}
+            onPlay={(v) => {
+              playAyah(v.verse_key, chapter?.id || 0, chapter?.name_complex || '');
+              if (session) logReading(v.verse_key, chapter?.id || 0, chapter?.name_complex || '');
+            }}
             onRead={() => {
               markAyahRead(verse.verse_key);
               setLastRead(chapter?.name_complex || '', verse.verse_key, chapter?.id || 0);
+              if (session) logReading(verse.verse_key, chapter?.id || 0, chapter?.name_complex || '');
             }}
           />
         ))}
@@ -734,6 +742,18 @@ export default function SurahView() {
               ayahNumber: shareVerse.verse_number
             }}
             onClose={() => setShareVerse(null)}
+          />
+        )}
+
+        {saveVerse && (
+          <AyahNotesModal
+            verse={{
+              verseKey: saveVerse.verse_key,
+              chapterId: chapter?.id || 0,
+              surahName: chapter?.name_complex || '',
+              ayahNumber: saveVerse.verse_number
+            }}
+            onClose={() => setSaveVerse(null)}
           />
         )}
       </main>

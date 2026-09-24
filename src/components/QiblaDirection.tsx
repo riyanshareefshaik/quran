@@ -4,6 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { fetchQibla } from '@/lib/prayer-api';
 import { watchPosition } from '@/lib/geolocation';
 
+// iOS Safari's device-motion permission gate and compass fields aren't in
+// the standard DOM lib types.
+type DeviceOrientationEventIOS = typeof DeviceOrientationEvent & {
+  requestPermission?: () => Promise<'granted' | 'denied'>;
+};
+interface CompassOrientationEvent extends DeviceOrientationEvent {
+  webkitCompassHeading?: number;
+  webkitCompassTrueHeading?: number;
+}
+
 const QiblaDirection: React.FC = () => {
   const [qibla, setQibla] = useState<number | null>(null);
   const [heading, setHeading] = useState<number>(0);
@@ -34,7 +44,6 @@ const QiblaDirection: React.FC = () => {
     const _y = gamma ? gamma * degToRad : 0; // Roll
     const _z = alpha ? alpha * degToRad : 0; // Yaw
 
-    const cX = Math.cos(_x);
     const cY = Math.cos(_y);
     const cZ = Math.cos(_z);
     const sX = Math.sin(_x);
@@ -60,7 +69,7 @@ const QiblaDirection: React.FC = () => {
 
   // Filter math to smooth crossing the 360/0 degree threshold safely
   const smoothHeading = (rawHeading: number) => {
-    let prev = previousHeading.current;
+    const prev = previousHeading.current;
     let delta = rawHeading - prev;
 
     // Shortest path around the circle
@@ -96,7 +105,7 @@ const QiblaDirection: React.FC = () => {
     });
 
     // Check if device requires explicitly requested hardware permission (iOS 13+)
-    if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+    if (typeof (DeviceOrientationEvent as DeviceOrientationEventIOS).requestPermission === 'function') {
       setNeedsPermission(true);
     } else {
       // Android and older browsers generally allow it openly, assume granted
@@ -113,7 +122,7 @@ const QiblaDirection: React.FC = () => {
     if (!permissionGranted) return;
 
     // Chrome/Android Absolute Orientation (Magnetometer with 3D Tilt Compensation)
-    const handleDeviceOrientationAbsolute = (e: any) => {
+    const handleDeviceOrientationAbsolute = (e: DeviceOrientationEvent) => {
       if (e.alpha !== null && e.beta !== null && e.gamma !== null) {
         // Compensate for phone being held upright (Pitch & Roll) rather than flat on a table
         const tiltCompensatedHeading = computeCompassHeading(e.alpha, e.beta, e.gamma);
@@ -122,10 +131,10 @@ const QiblaDirection: React.FC = () => {
     };
 
     // iOS Safari Compass Events
-    const handleDeviceOrientation = (e: any) => {
+    const handleDeviceOrientation = (e: CompassOrientationEvent) => {
       if (e.webkitCompassHeading !== undefined) {
         // Prefer True North if the device provides it, otherwise magnetic north
-        let rHeading = e.webkitCompassTrueHeading !== undefined && e.webkitCompassTrueHeading >= 0
+        const rHeading = e.webkitCompassTrueHeading !== undefined && e.webkitCompassTrueHeading >= 0
           ? e.webkitCompassTrueHeading
           : e.webkitCompassHeading;
         setHeading(smoothHeading(rHeading));
@@ -146,8 +155,9 @@ const QiblaDirection: React.FC = () => {
 
   const requestCompassPermission = async () => {
     try {
-      if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
-        const permissionState = await (DeviceOrientationEvent as any).requestPermission();
+      const iosDeviceOrientationEvent = DeviceOrientationEvent as DeviceOrientationEventIOS;
+      if (typeof iosDeviceOrientationEvent.requestPermission === 'function') {
+        const permissionState = await iosDeviceOrientationEvent.requestPermission();
         if (permissionState === 'granted') {
           setPermissionGranted(true);
           setNeedsPermission(false);

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // Only allow proxying audio from Quran.com's own CDNs — never an arbitrary
 // URL, to avoid this becoming an open proxy. Chapter recitations returned by
 // api.quran.com are served from download.quranicaudio.com.
-function isAllowedHost(hostname: string): boolean {
+export function isAllowedHost(hostname: string): boolean {
     return hostname === 'quran.com' || hostname.endsWith('.quran.com') ||
         hostname === 'qurancdn.com' || hostname.endsWith('.qurancdn.com') ||
         hostname === 'download.quranicaudio.com';

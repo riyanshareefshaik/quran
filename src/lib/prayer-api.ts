@@ -22,13 +22,22 @@ export interface HijriDate {
     designation: { abbreviated: string; expanded: string };
 }
 
+export interface GregorianDate {
+    date: string;
+    format: string;
+    day: string;
+    weekday: { en: string };
+    month: { number: number; en: string };
+    year: string;
+}
+
 export interface PrayerData {
     timings: PrayerTimings;
     date: {
         readable: string;
         timestamp: string;
         hijri: HijriDate;
-        gregorian: any;
+        gregorian: GregorianDate;
     };
 }
 

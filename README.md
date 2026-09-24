@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nur Al-Quran
 
-## Getting Started
+A Quran reading app: Uthmani Arabic text, translations, tafsir, and
+recitation audio (all sourced live from [Quran.com](https://quran.com)'s
+API — never fabricated or hand-copied), prayer times and Qibla direction,
+hadith, and Islamic guides. Built with [Next.js](https://nextjs.org) for the
+web and wrapped with [Capacitor](https://capacitorjs.com) for Android/iOS.
+Accounts, cross-device sync, and the admin dashboard run on
+[Supabase](https://supabase.com) (Postgres + Auth + row-level security).
 
-First, run the development server:
+The app is fully usable without an account — bookmarks, reading progress and
+settings work from local storage. Signing in (phone number + SMS code) adds
+cross-device sync plus notes, collections and reading history.
+
+See **[docs/API.md](docs/API.md)** for the full backend/API reference
+(database schema, RPC functions, REST routes, security model).
+
+## Getting started
 
 ```bash
+npm install
+cp .env.example .env.local   # fill in your Supabase project's URL + anon key
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). The app runs without
+Supabase configured too — accounts, sync and the admin dashboard simply
+disable themselves (see `src/lib/supabase.ts`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Setting up the database
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+In the Supabase dashboard's SQL editor, run these files **in order** (each is
+idempotent — safe to re-run):
 
-## Learn More
+```
+supabase/schema.sql
+supabase/002_user_accounts.sql
+supabase/003_user_content.sql
+```
 
-To learn more about Next.js, take a look at the following resources:
+Then make yourself the first admin (see the comment at the bottom of
+`schema.sql`).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Local dev server |
+| `npm run build` / `npm start` | Production web build/server |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm test` / `npm run test:watch` | Unit tests (Vitest) |
+| `npm run build:app` | Static export for Capacitor (Android/iOS) |
+| `npm run cap:android` / `npm run cap:ios` | Build + open the native project |
 
-## Deploy on Vercel
+CI (`.github/workflows/ci.yml`) runs lint, typecheck, tests and the web build
+on every push/PR.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Web**: deploy the Next.js app as usual (e.g. Vercel) with
+  `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` set. `GET
+  /api/health` reports readiness.
+- **Android/iOS**: `npm run build:app` produces a static export that
+  Capacitor wraps into the native project (`android/`, `ios/`). The native
+  app calls the hosted web deployment for the two server-only routes — set
+  `NEXT_PUBLIC_API_BASE_URL` at build time if that isn't the default in
+  `src/lib/api-config.ts`.
+
+## Learn more
+
+- [Next.js documentation](https://nextjs.org/docs)
+- [Capacitor documentation](https://capacitorjs.com/docs)
+- [Supabase documentation](https://supabase.com/docs)
