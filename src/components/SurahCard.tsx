@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useAudio } from '@/context/AudioContext';
 import { useBookmarks } from '@/context/BookmarkContext';
 import { fetchChapterRecitation } from '@/lib/quran-api';
+import { getApiBaseUrl, isNativeApp } from '@/lib/api-config';
 
 interface SurahCardProps {
   id: number;
@@ -53,7 +54,16 @@ const SurahCard: React.FC<SurahCardProps> = ({
       // restriction, and which sets Content-Disposition so the browser
       // downloads it directly.
       const filename = `${String(id).padStart(3, '0')}-${name.replace(/\s+/g, '-')}.mp3`;
-      const proxyUrl = `/api/download-audio?url=${encodeURIComponent(audioUrl)}&filename=${encodeURIComponent(filename)}`;
+      const proxyUrl = `${getApiBaseUrl()}/api/download-audio?url=${encodeURIComponent(audioUrl)}&filename=${encodeURIComponent(filename)}`;
+
+      // The app's WebView can't save files itself. Opening the hosted
+      // download link hands it to the phone's browser, which saves the MP3.
+      if (isNativeApp()) {
+        window.open(proxyUrl, '_system');
+        setDownloadState('done');
+        setTimeout(() => setDownloadState('idle'), 2500);
+        return;
+      }
 
       const res = await fetch(proxyUrl);
       if (!res.ok) throw new Error('Failed to fetch audio file');

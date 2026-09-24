@@ -7,9 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "build:capacitor": "CAPACITOR_BUILD=true next build && npx cap sync",
+    "build:capacitor": "node scripts/build-capacitor.mjs && npx cap sync",
     "cap:android": "npm run build:capacitor && npx cap open android",
-    "cap:ios": "npm run build:capacitor && npx cap open ios"
+    "cap:ios": "npm run build:capacitor && npx cap open ios",
+    "build:app": "node scripts/build-capacitor.mjs"
   },
   "dependencies": {
     "@capacitor/core": "^8.5.0",

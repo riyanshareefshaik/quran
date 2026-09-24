@@ -8,7 +8,7 @@ import { Capacitor } from '@capacitor/core';
 // (e.g. to Vercel). You can override it at build time with:
 //   NEXT_PUBLIC_API_BASE_URL=https://your-domain.com npm run build:capacitor
 const HOSTED_API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_BASE_URL || 'https://REPLACE-WITH-YOUR-DOMAIN.com';
+    process.env.NEXT_PUBLIC_API_BASE_URL || 'https://quran-eight-tau.vercel.app';
 
 export function isNativeApp(): boolean {
     return Capacitor.isNativePlatform();
