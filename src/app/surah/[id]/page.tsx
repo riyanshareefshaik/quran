@@ -11,6 +11,7 @@ import { useSettings, FontSize } from '@/context/SettingsContext';
 import AyahShareModal from '@/components/AyahShareModal';
 import OrnateDivider from '@/components/OrnateDivider';
 import ReportIssueButton from '@/components/ReportIssueButton';
+import ReciterPicker from '@/components/ReciterPicker';
 
 interface VerseCardProps {
   verse: Verse;
@@ -634,6 +635,7 @@ export default function SurahPage() {
           <button className={`memo-toggle ${memoMode ? 'active' : ''}`} onClick={() => setMemoMode(!memoMode)}>
             {memoMode ? 'EXIT MEMO' : 'MEMO MODE'}
           </button>
+          <ReciterPicker />
           <button className={`play-header-btn ${isCurrentPlaying ? 'playing' : ''}`} onClick={handlePlayHeader}>
             {isCurrentPlaying ? 'PAUSE' : 'PLAY SURAH'}
           </button>

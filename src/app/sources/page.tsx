@@ -31,6 +31,13 @@ const SOURCES: SourceEntry[] = [
         auth: 'Public, no API key required',
     },
     {
+        name: 'EveryAyah verse-by-verse recitations',
+        used: true,
+        purpose: 'Verse-by-verse audio for reciters that Quran.com offers only as full surahs (e.g. Yasser Al-Dosari, Maher Al-Muaiqly, Saad Al-Ghamdi). Full-surah audio always comes from Quran.com.',
+        endpoint: 'mirrors.quranicaudio.com/everyayah · everyayah.com/data',
+        auth: 'Public audio files, no API key required',
+    },
+    {
         name: 'Hadith API (open-source dataset)',
         used: true,
         purpose: 'Hadith text in Arabic with translations and scholars\' gradings for Sahih al-Bukhari, Sahih Muslim, the four Sunan, Muwatta Malik and the Forty Hadith collections.',

@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { useAudio } from '@/context/AudioContext';
-import { RECITERS } from '@/lib/quran-api';
+import { getReciter } from '@/lib/quran-api';
+import ReciterPicker from '@/components/ReciterPicker';
 
 const AudioPlayer: React.FC = () => {
   const {
@@ -13,7 +14,6 @@ const AudioPlayer: React.FC = () => {
     duration,
     playbackSpeed,
     togglePlay,
-    setReciter,
     setSpeed,
     seek,
     playAyah,
@@ -55,7 +55,7 @@ const AudioPlayer: React.FC = () => {
             <div className="text-info">
               <span className="chapter-name">{currentChapterName}</span>
               <span className="reciter-info">
-                {RECITERS.find(r => r.id === currentReciterId)?.name}
+                {getReciter(currentReciterId).name}
               </span>
             </div>
           </div>
@@ -79,18 +79,8 @@ const AudioPlayer: React.FC = () => {
         {isExpanded && (
           <div className="expanded-settings">
             <div className="setting-group">
-              <label>Select Qari</label>
-              <div className="reciter-grid">
-                {RECITERS.map(reciter => (
-                  <button
-                    key={reciter.id}
-                    className={`reciter-btn ${currentReciterId === reciter.id ? 'active' : ''}`}
-                    onClick={() => setReciter(reciter.id)}
-                  >
-                    {reciter.name}
-                  </button>
-                ))}
-              </div>
+              <label>Qari</label>
+              <ReciterPicker compact />
             </div>
 
             <div className="setting-group">
