@@ -4,6 +4,7 @@ import React, { useEffect, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { cleanTranslation, fetchChapterInfo, fetchVerseByKey, Verse } from '@/lib/quran-api';
 import { useAudio } from '@/context/AudioContext';
+import Icon from '@/components/Icon';
 
 // A hand-picked cycle of well-known verses that read clearly on their own.
 // Each key was checked against Quran.com.
@@ -63,7 +64,7 @@ const VerseOfTheDay: React.FC = () => {
             <p className="votd-arabic amiri-text" dir="rtl" lang="ar">{verse.text_uthmani}</p>
             <p className="votd-translation">“{translation}”</p>
             <div className="votd-actions">
-                <button type="button" className="votd-btn primary" onClick={() => playAyah(key, Number(chapterId), surah)}>▶ Listen</button>
+                <button type="button" className="votd-btn primary" onClick={() => playAyah(key, Number(chapterId), surah)}><Icon name="play" size={14} /> Listen</button>
                 <Link href={`/surah/${chapterId}`} className="votd-btn">Read in context</Link>
                 <button type="button" className="votd-btn" onClick={share}>Share</button>
             </div>

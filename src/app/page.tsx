@@ -14,6 +14,7 @@ import OrnateDivider from '@/components/OrnateDivider';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 import VerseOfTheDay from '@/components/VerseOfTheDay';
 import ContinueListening from '@/components/ContinueListening';
+import Icon from '@/components/Icon';
 
 export default function Home() {
   const [showCalendar, setShowCalendar] = useState(false);
@@ -49,7 +50,7 @@ export default function Home() {
               className="global-search-trigger glass-card"
               onClick={() => setShowSearchModal(true)}
             >
-              <span className="search-icon">🔍</span>
+              <span className="search-icon"><Icon name="search" size={18} /></span>
               <span className="search-label">Search Quran (Verses, Surahs, Translations)</span>
             </button>
           </div>
@@ -270,14 +271,14 @@ export default function Home() {
 
         .dashboard-grid {
           display: grid;
-          grid-template-columns: 2fr auto 1fr;
+          grid-template-columns: minmax(0, 2fr) auto minmax(0, 1fr);
           gap: 1.5rem;
           align-items: stretch;
         }
 
         @media (max-width: 900px) {
           .dashboard-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
           }
         }
 
@@ -319,12 +320,14 @@ export default function Home() {
         }
 
         .dashboard-secondary {
+          min-width: 0;
           display: flex;
           flex-direction: column;
           gap: 1.5rem;
         }
 
         .dash-row {
+          min-width: 0;
           display: flex;
           gap: 1.5rem;
         }
@@ -337,14 +340,14 @@ export default function Home() {
 
         .religious-events-grid {
           display: grid;
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
           gap: 1.5rem;
           flex: 1;
         }
 
         @media (max-width: 420px) {
           .religious-events-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
           }
         }
 
@@ -416,8 +419,10 @@ export default function Home() {
 
         .hero-content {
             flex: 1;
+            min-width: 0;
             max-width: 600px;
             z-index: 2;
+            overflow-wrap: break-word;
         }
 
         .hero-content h2 {
@@ -513,6 +518,25 @@ export default function Home() {
         }
 
         @media (max-width: 768px) {
+          .hero-card {
+            padding: 1.75rem 1.4rem;
+          }
+          .hero-content h2 {
+            font-size: 1.7rem;
+            line-height: 1.25;
+          }
+          .hero-desc {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+          }
+          :global(.read-now-btn) {
+            padding: 0.9rem 1.6rem;
+            max-width: 100%;
+          }
+          .hero-decorator {
+            font-size: 7rem;
+            right: 0.5rem;
+          }
           h1 {
             font-size: 2.2rem;
           }

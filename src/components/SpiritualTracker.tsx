@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useProgress } from '@/context/ProgressContext';
+import Icon from '@/components/Icon';
 
 const TOTAL_QURAN_AYAHS = 6236;
 
@@ -64,7 +65,7 @@ const SpiritualTracker: React.FC = () => {
           <div className="ring-text">
             {uniqueAyahsCompleted === 0 ? (
               <>
-                <span className="percent zero-state">✨</span>
+                <span className="percent zero-state"><Icon name="sparkle" size={28} /></span>
                 <span className="percent-label">Start Today</span>
               </>
             ) : (
@@ -242,6 +243,7 @@ const SpiritualTracker: React.FC = () => {
                     padding: 0.6rem 1rem;
                     border-radius: 8px;
                     display: flex;
+                    flex-wrap: wrap;
                     align-items: center;
                     justify-content: space-between;
                     gap: 0.75rem;
@@ -265,6 +267,8 @@ const SpiritualTracker: React.FC = () => {
                     min-height: 44px;
                     display: inline-flex;
                     align-items: center;
+                    white-space: nowrap;
+                    max-width: 100%;
                     transition: opacity 0.2s;
                 }
                 

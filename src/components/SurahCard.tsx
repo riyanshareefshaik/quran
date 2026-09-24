@@ -205,7 +205,9 @@ const SurahCard: React.FC<SurahCardProps> = ({
 
         .surah-info {
           flex: 1;
+          min-width: 0;
           text-align: left;
+          overflow-wrap: break-word;
         }
 
         .surah-name {
@@ -295,6 +297,8 @@ const SurahCard: React.FC<SurahCardProps> = ({
         @media (hover: none) {
           .surah-actions-overlay {
             opacity: 1;
+            max-height: none;
+            overflow: visible;
             transform: none;
             position: static;
             background: transparent;

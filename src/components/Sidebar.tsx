@@ -11,11 +11,11 @@ const Sidebar: React.FC = () => {
     const pathname = usePathname();
 
     const navItems = [
-        { name: 'Dashboard', path: '/', icon: 'dashboard' as const },
-        { name: 'Quran', path: '/surahs', icon: 'quran' as const },
-        { name: 'Hadith', path: '/hadith', icon: 'hadith' as const },
-        { name: 'Essentials', path: '/essentials', icon: 'essentials' as const },
-        { name: 'Guides', path: '/guides', icon: 'guides' as const },
+        { name: 'Dashboard', short: 'Home', path: '/', icon: 'dashboard' as const },
+        { name: 'Quran', short: 'Quran', path: '/surahs', icon: 'quran' as const },
+        { name: 'Hadith', short: 'Hadith', path: '/hadith', icon: 'hadith' as const },
+        { name: 'Essentials', short: 'Duas', path: '/essentials', icon: 'essentials' as const },
+        { name: 'Guides', short: 'Guides', path: '/guides', icon: 'guides' as const },
     ];
 
     return (
@@ -84,7 +84,7 @@ const Sidebar: React.FC = () => {
                             className={`mobile-tab-item ${isActive ? 'active' : ''}`}
                         >
                             <span className="tab-icon"><NavIcon name={item.icon} size={22} /></span>
-                            <span className="tab-label">{item.name}</span>
+                            <span className="tab-label">{item.short}</span>
                         </Link>
                     );
                 })}
@@ -262,7 +262,9 @@ const Sidebar: React.FC = () => {
                     color: var(--emerald-light);
                     transition: all 0.3s ease;
                     text-decoration: none;
-                    flex: 1;
+                    flex: 1 1 0;
+                    min-width: 0;
+                    padding: 0 2px;
                     height: 100%;
                 }
 
@@ -282,10 +284,13 @@ const Sidebar: React.FC = () => {
                 }
 
                 .tab-label {
-                    font-size: 0.65rem;
+                    font-size: 0.68rem;
                     font-weight: 600;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
+                    letter-spacing: 0.2px;
+                    max-width: 100%;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
                 }
 
                 /* Responsive Layout Rules */

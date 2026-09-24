@@ -8,6 +8,7 @@ import SurahList from '@/components/SurahList';
 import SearchModal from '@/components/SearchModal';
 import OrnateFrame from '@/components/OrnateFrame';
 import OrnateDivider from '@/components/OrnateDivider';
+import Icon from '@/components/Icon';
 
 export default function SurahsPage() {
     const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -47,7 +48,7 @@ export default function SurahsPage() {
                         className="global-search-trigger glass-card"
                         onClick={() => setShowSearchModal(true)}
                     >
-                        <span className="search-icon">🔍</span> Advanced Search
+                        <span className="search-icon"><Icon name="search" size={16} /></span> Advanced Search
                     </button>
                 </header>
 
@@ -55,7 +56,7 @@ export default function SurahsPage() {
                     <div className="title-area">
                         <h1 className="gold-text font-display">Sacred Chapters</h1>
                         <p className="subtitle">The complete revelation</p>
-                        <Link href="/offline" className="offline-link">⬇ Save for offline reading</Link>
+                        <Link href="/offline" className="offline-link"><Icon name="download" size={14} /> Save for offline reading</Link>
                     </div>
                 </OrnateFrame>
 

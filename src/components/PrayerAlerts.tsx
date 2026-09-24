@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { useSettings } from '@/context/SettingsContext';
 import { getCurrentPosition } from '@/lib/geolocation';
 import { isNativeApp } from '@/lib/api-config';
+import Icon from '@/components/Icon';
 import {
     ADHAN_AUDIO, ALERT_PRAYERS, AlertSettings, exactAlarmsAllowed, loadAlertSettings, openExactAlarmSettings,
     requestAlertPermission, saveAlertSettings, scheduleAlerts,
@@ -129,8 +130,8 @@ const PrayerAlertsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 </label>
                 {settings.sound === 'adhan' && (
                     <div className="alerts-preview">
-                        <button type="button" onClick={() => togglePreview('regular')}>{preview === 'regular' ? '■ Stop' : '▶ Preview adhan'}</button>
-                        <button type="button" onClick={() => togglePreview('fajr')}>{preview === 'fajr' ? '■ Stop' : '▶ Preview Fajr adhan'}</button>
+                        <button type="button" onClick={() => togglePreview('regular')}>{preview === 'regular' ? <><Icon name="stop" size={12} /> Stop</> : <><Icon name="play" size={12} /> Preview adhan</>}</button>
+                        <button type="button" onClick={() => togglePreview('fajr')}>{preview === 'fajr' ? <><Icon name="stop" size={12} /> Stop</> : <><Icon name="play" size={12} /> Preview Fajr adhan</>}</button>
                     </div>
                 )}
                 {settings.sound === 'adhan' && settings.minutesBefore > 0 && (

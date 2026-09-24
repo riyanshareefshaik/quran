@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Amiri, Cinzel } from "next/font/google";
 import "./globals.css";
+import StyledJsxRegistry from "./registry";
 import { AudioProvider } from "@/context/AudioContext";
 import { SettingsProvider } from "@/context/SettingsContext";
 import { ProgressProvider } from "@/context/ProgressContext";
@@ -60,6 +61,7 @@ export default function RootLayout({
   return (
     <html lang="en" data-theme="dark" data-scroll-behavior="smooth" className={`${inter.variable} ${amiri.variable} ${cinzel.variable}`}>
       <body className="islamic-pattern" suppressHydrationWarning>
+        <StyledJsxRegistry>
         <SettingsProvider>
           <ProgressProvider>
             <BookmarkProvider>
@@ -77,6 +79,7 @@ export default function RootLayout({
             </BookmarkProvider>
           </ProgressProvider>
         </SettingsProvider>
+        </StyledJsxRegistry>
       </body>
     </html>
   );

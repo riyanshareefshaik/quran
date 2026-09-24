@@ -236,6 +236,8 @@ const HadithCard: React.FC<{ hadith: Hadith; collection: HadithCollection; highl
             )}
             <style jsx>{`
                 .hadith-card {
+                    min-width: 0;
+                    overflow-wrap: anywhere;
                     background: var(--card-bg);
                     border: 1px solid rgba(212, 175, 55, 0.15);
                     border-left: 3px solid var(--gold-primary);
