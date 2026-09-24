@@ -13,10 +13,23 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- Dark app: dark window behind the system bars, with light bar icons. -->
+        <item name="android:windowBackground">@color/nq_app_background</item>
+        <item name="android:statusBarColor">@color/nq_app_background</item>
+        <item name="android:navigationBarColor">@color/nq_app_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
     </style>
 
 
+    <!-- Launch screen. Android 12+ draws it from windowSplashScreen* (default
+         would be white); older versions show @drawable/splash. -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
+        <item name="windowSplashScreenBackground">@color/nq_splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+        <item name="android:statusBarColor">@color/nq_splash_background</item>
+        <item name="android:navigationBarColor">@color/nq_splash_background</item>
     </style>
 </resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Launch screen: the app's emerald theme colour (matches splash.png and the web manifest). -->
+    <color name="nq_splash_background">#043927</color>
+    <!-- App background behind the status/navigation bars (matches the web app matte black). -->
+    <color name="nq_app_background">#121212</color>
+</resources>
