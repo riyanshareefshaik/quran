@@ -1,0 +1,23 @@
+Adhan recordings used for prayer-time alerts
+============================================
+
+adhan.mp3 (also android/app/src/main/res/raw/adhan.mp3)
+  Source: "The Adhan - Muslim Call to Prayer - Aaqib Azeez.mp3"
+  https://commons.wikimedia.org/wiki/File:The_Adhan_-_Muslim_Call_to_Prayer_-_Aaqib_Azeez.mp3
+  Reciter: Aaqib Azeez. Uploaded by Atcovi.
+  Licence: Creative Commons Attribution-ShareAlike 4.0 (CC BY-SA 4.0)
+  https://creativecommons.org/licenses/by-sa/4.0/
+  Changes: converted to mono MP3 96 kbps, loudness-normalised, short fades.
+  This adapted recording is shared under the same CC BY-SA 4.0 licence.
+
+adhan-fajr.mp3 (also android/app/src/main/res/raw/adhan_fajr.mp3)
+  Source: "Eid al-Fitr Fajr azan at Malmö Mosque - 19 August 2012.webm"
+  https://commons.wikimedia.org/wiki/File:Eid_al-Fitr_Fajr_azan_at_Malm%C3%B6_Mosque_-_19_August_2012.webm
+  Author: Islamic Center Malmö
+  Licence: Creative Commons Attribution 3.0 (CC BY 3.0)
+  https://creativecommons.org/licenses/by/3.0/
+  Changes: audio extracted, trimmed to the adhan itself (salawat after the
+  adhan removed), mono MP3 96 kbps, loudness-normalised, short fades.
+
+Both recordings were checked phrase by phrase against the standard adhan
+wording (the Fajr recording includes "as-salatu khayrun minan-nawm" twice).

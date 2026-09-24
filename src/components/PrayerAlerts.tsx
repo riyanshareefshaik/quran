@@ -6,7 +6,7 @@ import { useSettings } from '@/context/SettingsContext';
 import { getCurrentPosition } from '@/lib/geolocation';
 import { isNativeApp } from '@/lib/api-config';
 import {
-    ALERT_PRAYERS, AlertSettings, exactAlarmsAllowed, loadAlertSettings, openExactAlarmSettings,
+    ADHAN_AUDIO, ALERT_PRAYERS, AlertSettings, exactAlarmsAllowed, loadAlertSettings, openExactAlarmSettings,
     requestAlertPermission, saveAlertSettings, scheduleAlerts,
 } from '@/lib/prayer-alerts';
 
@@ -47,7 +47,21 @@ const PrayerAlertsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const [settings, setSettings] = useState<AlertSettings>(loadAlertSettings);
     const [message, setMessage] = useState('');
     const [exactOk, setExactOk] = useState(true);
+    const [preview, setPreview] = useState<'regular' | 'fajr' | null>(null);
+    const audioRef = React.useRef<HTMLAudioElement | null>(null);
     const native = isNativeApp();
+
+    const togglePreview = (which: 'regular' | 'fajr') => {
+        audioRef.current?.pause();
+        if (preview === which) { setPreview(null); return; }
+        const audio = new Audio(ADHAN_AUDIO[which]);
+        audio.onended = () => setPreview(null);
+        audio.play().catch(() => setPreview(null));
+        audioRef.current = audio;
+        setPreview(which);
+    };
+
+    useEffect(() => () => audioRef.current?.pause(), []);
 
     useEffect(() => {
         exactAlarmsAllowed().then(setExactOk);
@@ -106,6 +120,23 @@ const PrayerAlertsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     </select>
                 </label>
 
+                <label className="alerts-field">
+                    Sound
+                    <select value={settings.sound} disabled={!settings.enabled} onChange={e => update({ ...settings, sound: e.target.value as AlertSettings['sound'] })}>
+                        <option value="adhan">Adhan (full call to prayer)</option>
+                        <option value="default">Normal notification sound</option>
+                    </select>
+                </label>
+                {settings.sound === 'adhan' && (
+                    <div className="alerts-preview">
+                        <button type="button" onClick={() => togglePreview('regular')}>{preview === 'regular' ? '■ Stop' : '▶ Preview adhan'}</button>
+                        <button type="button" onClick={() => togglePreview('fajr')}>{preview === 'fajr' ? '■ Stop' : '▶ Preview Fajr adhan'}</button>
+                    </div>
+                )}
+                {settings.sound === 'adhan' && settings.minutesBefore > 0 && (
+                    <p className="alerts-hint">Reminders before the prayer use the normal sound; the adhan is for the prayer time itself. Choose “At the prayer time” to hear the adhan.</p>
+                )}
+
                 {message && <p className="alerts-error" role="alert">{message}</p>}
 
                 {native && settings.enabled && !exactOk && (
@@ -120,6 +151,9 @@ const PrayerAlertsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                         ? 'Alerts are scheduled a week ahead on this phone using your location and chosen calculation method, and refresh each time you open the app.'
                         : 'On the website, alerts appear only while this site is open in a browser tab. Install the Android app for alerts when the app is closed.'}
                     {' '}Times can differ slightly from your local mosque.
+                </p>
+                <p className="alerts-credit">
+                    Adhan: Aaqib Azeez (CC BY-SA 4.0). Fajr adhan: Islamic Center Malmö (CC BY 3.0). Both via Wikimedia Commons.
                 </p>
             </div>
 
@@ -143,6 +177,12 @@ const PrayerAlertsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 .alerts-field select { text-transform: none; letter-spacing: 0; background: rgba(0,0,0,0.35); border: 1px solid rgba(212,175,55,0.35); color: var(--off-white); border-radius: 10px; padding: 0.6rem 0.8rem; font-family: inherit; font-size: 0.92rem; }
                 .alerts-field select option { background: #101a15; }
                 .alerts-error { margin: 0; color: #e6a5a5; font-size: 0.85rem; }
+                .alerts-preview { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: -0.4rem; }
+                .alerts-preview button { background: transparent; border: 1px solid rgba(212,175,55,0.4); color: var(--gold-primary); border-radius: 20px; padding: 0.4rem 0.9rem; font-family: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+                .alerts-preview button:hover { background: rgba(212,175,55,0.12); }
+                .alerts-preview button:focus-visible { outline: 2px solid var(--gold-primary); outline-offset: 2px; }
+                .alerts-hint { margin: -0.4rem 0 0; font-size: 0.78rem; color: rgba(255,255,255,0.6); }
+                .alerts-credit { margin: 0; font-size: 0.68rem; color: rgba(255,255,255,0.4); }
                 .alerts-tip { border: 1px solid rgba(212,175,55,0.35); border-radius: 10px; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
                 .alerts-tip p { margin: 0; font-size: 0.85rem; color: rgba(255,255,255,0.8); }
                 .alerts-tip button { align-self: flex-start; background: var(--gold-primary); color: var(--matte-black); border: none; border-radius: 20px; padding: 0.45rem 1rem; font-weight: 700; font-family: inherit; cursor: pointer; }

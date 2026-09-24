@@ -38,6 +38,14 @@ const SOURCES: SourceEntry[] = [
         auth: 'Public audio files, no API key required',
     },
     {
+        name: 'Adhan recordings (Wikimedia Commons)',
+        used: true,
+        purpose: 'The adhan played for prayer-time alerts: the standard adhan recited by Aaqib Azeez (CC BY-SA 4.0), and the Fajr adhan from the Islamic Center Malmö (CC BY 3.0).',
+        endpoint: 'Bundled with the app (public/audio, Android res/raw)',
+        auth: 'Creative Commons licences; attribution in public/audio/CREDITS.txt',
+        note: 'Both were checked phrase by phrase against the standard adhan wording; the salawat recited after the Fajr adhan was trimmed so only the adhan plays.',
+    },
+    {
         name: 'Hadith API (open-source dataset)',
         used: true,
         purpose: 'Hadith text in Arabic with translations and scholars\' gradings for Sahih al-Bukhari, Sahih Muslim, the four Sunan, Muwatta Malik and the Forty Hadith collections.',
