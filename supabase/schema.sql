@@ -2,7 +2,6 @@
 --
 -- Run this whole file once in the Supabase dashboard -> SQL Editor -> New query.
 -- It is safe to re-run: every statement is idempotent.
--- Then run 002_user_accounts.sql for phone sign-in and cloud sync.
 --
 -- Security model: the web app only ever holds the public "anon" key. Every
 -- permission below is enforced by Postgres row-level security (RLS), so the

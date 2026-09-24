@@ -9,7 +9,6 @@ interface Stats {
     newFeedback: number;
     openReports: number;
     liveAnnouncements: number;
-    accounts: number | null;
     viewsToday: number;
     views7: number;
     views30: number;
@@ -23,13 +22,12 @@ const OverviewTab: React.FC<{ supabase: SupabaseClient; onNavigate: (tab: string
     useEffect(() => {
         let cancelled = false;
         (async () => {
-            const [fb, rp, ann, views, latest, accounts] = await Promise.all([
+            const [fb, rp, ann, views, latest] = await Promise.all([
                 supabase.from('feedback').select('id', { count: 'exact', head: true }).eq('status', 'new'),
                 supabase.from('content_reports').select('id', { count: 'exact', head: true }).in('status', ['new', 'reviewing']),
                 supabase.from('announcements').select('is_active, starts_at, ends_at'),
                 supabase.from('page_views').select('day, views').gte('day', isoDay(29)).limit(10000),
                 supabase.from('feedback').select('*').order('created_at', { ascending: false }).limit(5),
-                supabase.rpc('account_count'), // only exists once 002_user_accounts.sql has been run
             ]);
             if (cancelled) return;
             const firstError = fb.error || rp.error || ann.error || views.error || latest.error;
@@ -46,7 +44,6 @@ const OverviewTab: React.FC<{ supabase: SupabaseClient; onNavigate: (tab: string
                 newFeedback: fb.count ?? 0,
                 openReports: rp.count ?? 0,
                 liveAnnouncements: live,
-                accounts: accounts.error ? null : Number(accounts.data),
                 viewsToday: sumSince(isoDay(0)),
                 views7: sumSince(isoDay(6)),
                 views30: sumSince(isoDay(29)),
@@ -63,7 +60,6 @@ const OverviewTab: React.FC<{ supabase: SupabaseClient; onNavigate: (tab: string
         { label: 'New feedback', value: stats.newFeedback, tab: 'feedback' },
         { label: 'Open content reports', value: stats.openReports, tab: 'reports' },
         { label: 'Live announcements', value: stats.liveAnnouncements, tab: 'announcements' },
-        ...(stats.accounts !== null ? [{ label: 'User accounts', value: stats.accounts }] : []),
         { label: 'Views today', value: stats.viewsToday, tab: 'analytics' },
         { label: 'Views · 7 days', value: stats.views7, tab: 'analytics' },
         { label: 'Views · 30 days', value: stats.views30, tab: 'analytics' },

@@ -1,8 +1,11 @@
 # Nur Al-Quran — Backend & API Reference
 
 This documents the app's actual backend surface: a [Supabase](https://supabase.com)
-Postgres database (auth, storage of user data, row-level security) plus a
-small number of custom Next.js REST routes. There is no separate application
+Postgres database (admin sign-in, feedback, reports, announcements and
+anonymous page counts, all behind row-level security) plus a small number of
+custom Next.js REST routes. The app has **no end-user accounts**: personal
+data (bookmarks, progress, notes, favorites, reading history, settings) is
+stored only on the user's device. There is no separate application
 server — Supabase's auto-generated [PostgREST](https://postgrest.org) API,
 secured entirely by RLS policies and `SECURITY DEFINER` functions, *is* the
 backend for everything except audio proxying and the health check.
@@ -19,6 +22,7 @@ wrong.
 - [Architecture](#architecture)
 - [Authentication & authorization](#authentication--authorization)
 - [Database schema](#database-schema)
+- [On-device data](#on-device-data)
 - [RPC functions](#rpc-functions)
 - [Custom REST routes](#custom-rest-routes)
 - [External APIs](#external-apis)
@@ -53,30 +57,18 @@ wrong.
 
 ## Authentication & authorization
 
-- **Sign-in**: phone number + SMS OTP (Supabase Auth, `src/app/account/page.tsx`).
-  No passwords are stored or handled by this app for end users.
-- **Anonymous use is fully supported**: bookmarks, reading progress and
-  settings work from `localStorage` with no account. Signing in only adds
-  cross-device sync (`user_data` table) plus account-only features (notes,
-  collections, reading history — see below).
-- **Admins**: rows in `public.admins`, added via `add_admin(email)` by an
-  existing admin (no self-service admin signup). Admin status is checked
-  server-side, in Postgres, by `public.is_admin()` — never trusted from the
-  client.
-- **Authorization** is enforced by RLS policy on every table (see below), not
-  by application code. A compromised or buggy frontend cannot bypass it.
+- **No user accounts.** Readers never sign in. Everything personal lives in
+  the device's `localStorage` (see [On-device data](#on-device-data)).
+- **Admins only**: the admin dashboard (`/admin`) uses Supabase email +
+  password sign-in. Admin status is a row in `public.admins`, added via
+  `add_admin(email)` by an existing admin, and checked server-side in
+  Postgres by `public.is_admin()` — never trusted from the client.
+- **Authorization** is enforced by RLS policy on every table, not by
+  application code. A compromised or buggy frontend cannot bypass it.
 
 ## Database schema
 
-Defined across three idempotent, re-runnable SQL files in `supabase/`:
-
-| File | Adds |
-|---|---|
-| `schema.sql` | Admins, announcements, feedback, content reports, anonymous page views |
-| `002_user_accounts.sql` | Profiles, synced bookmarks/progress (`user_data`), account deletion |
-| `003_user_content.sql` | Notes, collections, saved ayahs, reading history, synced preferences |
-
-### Public content (readable by anyone, writable only by admins)
+Defined in one idempotent, re-runnable SQL file: `supabase/schema.sql`.
 
 | Table | Purpose | Write access |
 |---|---|---|
@@ -86,43 +78,22 @@ Defined across three idempotent, re-runnable SQL files in `supabase/`:
 | `page_views` | Anonymous daily page-view counter (no IP/user id) | via `track_page_view()` only |
 | `admins` | Who has admin access | via `add_admin`/`remove_admin` only |
 
-### Per-user content (every row owned by exactly one `auth.uid()`, RLS-scoped)
+## On-device data
 
-| Table | Purpose | Notes |
+Stored in `localStorage` only, never sent to the backend:
+
+| Key | Contents | Code |
 |---|---|---|
-| `profiles` | Display name | 1:1 with `auth.users` |
-| `user_data` | `bookmarks` (jsonb array), `progress` (jsonb object), `preferences` (jsonb object) | One row per user; see [sync model](#sync-model) |
-| `notes` | One personal note per ayah (`(user_id, verse_key)` unique) | Capped at 2,000/user |
-| `collections` | Named groups of saved ayahs (e.g. "Favorites") | Capped at 100/user; `is_default` marks the auto-created Favorites collection |
-| `collection_ayahs` | Ayahs saved into a collection | `(collection_id, verse_key)` unique |
-| `reading_history` | Append-only log of opened ayahs | Auto-pruned to the most recent 200/user by trigger |
+| `quran_bookmarks`, `quran_progress`, `quran_settings` | Bookmarked surahs, reading progress, reading settings | `src/context/*Context.tsx` |
+| `nq_notes` | One note per ayah (max 2,000 notes, 4,000 chars each) | `src/lib/notes.ts` |
+| `nq_collections`, `nq_collection_ayahs` | Collections incl. the default Favorites (max 50 collections, 1,000 ayahs each) | `src/lib/collections.ts` |
+| `nq_reading_history` | Recently read ayahs, newest first, capped at 200 | `src/lib/reading-history.ts` |
+| `quran_reciter`, `tafsir_id`, `hadith_language`, `prayer_alerts`, `last_listening` | Preferences and resume point | various |
 
-Every per-user table has `enable row level security` plus a
-`using (user_id = auth.uid()) with check (user_id = auth.uid())` policy (or
-equivalent), length/format `check` constraints on every text/jsonb column,
-and `updated_at` triggers where rows are mutated in place. Verse keys are
-validated with a regex (`^([1-9]|[1-9][0-9]|10[0-9]|11[0-4]):[0-9]{1,3}$`) so
-a malformed key can never be written.
-
-### Sync model
-
-`user_data` holds three independently-synced blobs per user:
-
-- **`bookmarks`** (array): merged by union on sign-in (`mergeBookmarks` in
-  `src/lib/sync-merge.ts`) — a bookmark added on either device survives.
-- **`progress`** (object): merged by taking the larger total/streak and the
-  union of completed ayahs and per-day activity (`mergeProgress`).
-- **`preferences`** (object — reciter, font size, comfort/focus mode, line
-  spacing, prayer calculation method, prayer silent mode, auto-continue):
-  merged by letting the cloud value win for any key it has set, else keeping
-  the device's local value (`mergePreferences`) — i.e. a fresh device adopts
-  the account's known settings; changing a setting afterward simply pushes
-  the new value (last-write-wins).
-
-Notes/collections/reading-history are normalized, per-row tables instead —
-each row is independently created/updated/deleted, so there is no whole-blob
-merge to do; a row's own `updated_at`/`read_at` decides "last write wins" if
-the same row is edited from two devices near-simultaneously.
+Every read validates the stored shape (corrupted data is ignored, never
+crashes the app) and every write fails soft with a friendly "storage may be
+full" error. Saved Quran text/tafsir for offline reading lives in IndexedDB
+(`src/lib/offline-store.ts`).
 
 ## RPC functions
 
@@ -136,10 +107,6 @@ execute ... to authenticated` (never `anon`, except where noted).
 | `add_admin(email)` | admins only | Grant admin access to an existing user |
 | `remove_admin(user_id)` | admins only | Revoke admin access (can't remove yourself) |
 | `track_page_view(path)` | anon, authenticated | Increments an anonymous daily counter; silently no-ops for `/admin*` or malformed paths |
-| `delete_my_account()` | authenticated | Deletes the caller's `auth.users` row (cascades to all their data); blocked for admins |
-| `account_count()` | admins only | Total number of accounts (no personal data) |
-| `ensure_default_collection()` | authenticated | Returns (creating if needed) the caller's default "Favorites" collection id |
-| `log_reading(verse_key, chapter_id, surah_name)` | authenticated | Appends one reading-history row; trigger prunes to the last 200 |
 
 ## Custom REST routes
 
@@ -196,22 +163,12 @@ All are allow-listed explicitly in the CSP `connect-src` directive
 
 ## Running migrations
 
-Supabase has no built-in migration runner wired into this repo (no
-`supabase/config.toml` / CLI project). Migrations are plain SQL files,
-designed to be pasted into the Supabase dashboard's SQL editor **in order**:
+Paste `supabase/schema.sql` into the Supabase dashboard's SQL editor and run
+it. It is idempotent (`create table if not exists`, `drop policy if exists` +
+recreate), so re-running it is always safe.
 
-```
-supabase/schema.sql
-supabase/002_user_accounts.sql
-supabase/003_user_content.sql
-```
-
-Every file is idempotent (`create table if not exists`, `drop policy if
-exists` + recreate, etc.) — re-running any of them is always safe, which is
-what makes "paste the whole file" a reasonable deploy step for a project this
-size. If you outgrow this, adopt the [Supabase CLI](https://supabase.com/docs/guides/cli)
-and turn these three files into its migration format without changing their
-content.
+Projects that previously ran the old account migrations can remove those
+now-unused tables with `supabase/remove_user_accounts.sql` (optional).
 
 ## Security model
 
@@ -225,20 +182,14 @@ content.
 - **Admin checks happen in Postgres** (`is_admin()`), not just in the
   frontend's admin UI gate — an admin route rendered by mistake still can't
   read/write anything a non-admin session couldn't.
-- **Input validation lives at the boundary**, not just in the UI: every
-  text/jsonb column has a `check` constraint (length, format, or both), and
-  every foreign-key/ownership relationship is enforced by a trigger or RLS
-  policy (e.g. `collection_ayahs.user_id` is verified against its parent
-  collection's owner in `enforce_collection_ayah_owner()`, so a forged
-  `user_id` in an insert can never smuggle a row into someone else's
-  collection).
-- **Per-user row caps** (`notes`: 2,000, `collections`: 100,
-  `reading_history`: 200 via auto-pruning) bound storage growth from a single
-  account without needing a separate cleanup job.
+- **Input validation lives at the boundary**: every text/jsonb column has a
+  `check` constraint (length, format, or both).
+- **No personal data on the server** beyond what a reader chooses to type
+  into feedback or a content report.
 - **`/api/download-audio` is not an open proxy** — see above.
 - **Security headers** (`next.config.ts`): CSP, HSTS, `X-Frame-Options: DENY`,
   `X-Content-Type-Options: nosniff`, `Referrer-Policy`, restrictive
   `Permissions-Policy`.
 - **Nothing sensitive is logged.** No password/token/API-key values ever
-  appear in application logs (there are no passwords to log — auth is
-  OTP-based — and the Supabase anon key is public by design).
+  appear in application logs (end users have no passwords, admin passwords
+  are handled only by Supabase Auth, and the anon key is public by design).

@@ -29,11 +29,9 @@ const SECTIONS: LegalSection[] = [
         paragraphs: ['Prayer times, the Islamic calendar and the Qibla direction are calculated automatically from your location and a calculation method. They can differ from your local mosque’s timetable or official moon-sighting announcements. When in doubt, follow your local mosque or Islamic authority.'],
     },
     {
-        title: 'Your account',
+        title: 'Your data',
         bullets: [
-            'Accounts are optional. Sign in only with a mobile number that belongs to you.',
-            'Keep your phone secure — anyone who can receive your sign-in codes can access your account.',
-            'You can delete your account at any time from the Account page.',
+            'There are no accounts. Notes, favorites, bookmarks and progress are saved only on your device, so they are lost if you clear the app’s data or change phones.',
         ],
     },
     {
@@ -60,7 +58,7 @@ const SECTIONS: LegalSection[] = [
     },
     {
         title: 'Suspension',
-        paragraphs: ['We may suspend accounts or block access that breaks these terms or threatens the safety of the service or its users.'],
+        paragraphs: ['We may block access that breaks these terms or threatens the safety of the service or its users.'],
     },
     {
         title: 'Changes to these terms',
@@ -77,7 +75,7 @@ export default function TermsPage() {
         <LegalPage
             title="Terms of Use"
             subtitle="Using Nur Al-Quran"
-            effective="23 September 2026"
+            effective="24 September 2026"
             intro="These terms explain how you may use Nur Al-Quran and the limits of the information it provides."
             sections={SECTIONS}
         />

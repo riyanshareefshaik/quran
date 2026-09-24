@@ -142,7 +142,7 @@ export default function Home() {
             Text verified from official Quran API
           </Link>
           <nav className="home-links" aria-label="More">
-            <Link href="/account">My Account</Link>
+            <Link href="/library">My Library</Link>
             <Link href="/feedback">Feedback</Link>
             <Link href="/privacy">Privacy</Link>
             <Link href="/terms">Terms</Link>

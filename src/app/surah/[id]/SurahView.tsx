@@ -8,7 +8,6 @@ import { fetchChapterInfo, fetchVersesByChapter, fetchTranslationsList, cleanTra
 import { useAudio } from '@/context/AudioContext';
 import { useProgress } from '@/context/ProgressContext';
 import { useSettings, FontSize } from '@/context/SettingsContext';
-import { useAuth } from '@/context/AuthContext';
 import { logReading } from '@/lib/reading-history';
 import AyahShareModal from '@/components/AyahShareModal';
 import AyahNotesModal from '@/components/AyahNotesModal';
@@ -34,9 +33,14 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
   const [showTranslation, setShowTranslation] = useState(!isMemoMode);
   const cardRef = React.useRef<HTMLDivElement>(null);
 
-  // Auto-track silent reading
+  // Auto-track silent reading. onRead is read through a ref so the 2.5s
+  // timer isn't restarted every time the parent re-renders (e.g. on each
+  // audio time update while recitation plays).
+  const onReadRef = React.useRef(onRead);
+  useEffect(() => { onReadRef.current = onRead; }, [onRead]);
+
   useEffect(() => {
-    if (!onRead) return;
+    if (!onReadRef.current) return;
 
     let timeout: NodeJS.Timeout;
 
@@ -45,7 +49,7 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
         if (entry.isIntersecting) {
           // Verse is visible, start a 2.5 second reading timer
           timeout = setTimeout(() => {
-            onRead();
+            onReadRef.current?.();
           }, 2500);
         } else {
           // Verse left view, cancel timer to prevent rapid scroll false-positives
@@ -61,7 +65,7 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
       clearTimeout(timeout);
       observer.disconnect();
     };
-  }, [onRead]);
+  }, []);
 
   useEffect(() => {
     setShowTranslation(!isMemoMode);
@@ -73,7 +77,7 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
   }, [nowPlaying]);
 
   return (
-    <div className="verse-card-container" ref={cardRef}>
+    <div className="verse-card-container" id={verse.verse_key} ref={cardRef}>
       <div className={`glass-card verse-card ${nowPlaying ? 'now-playing' : ''} ${isMemoMode && !showTranslation ? 'memo-active' : ''} ${isBlurred ? 'blurred-verse' : ''} ${focusMode ? 'focus-mode-active' : ''}`}>
 
         {!focusMode && (
@@ -339,10 +343,17 @@ export default function SurahView() {
   const { playChapter, playAyah, isPlaying, currentChapterId, togglePlay, currentVerseKey } = useAudio();
   const { arabicFontSize, setArabicFontSize, readingComfortMode, toggleReadingComfortMode, focusMode, toggleFocusMode } = useSettings();
   const { markAyahRead, setLastRead } = useProgress();
-  const { session } = useAuth();
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Links like /surah/2#2:255 (from My Library) open at that verse once loaded.
+  useEffect(() => {
+    if (loading || !verses.length) return;
+    const target = decodeURIComponent(window.location.hash.slice(1));
+    if (!target) return;
+    requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView({ block: 'center' }));
+  }, [loading, verses.length]);
   const [translations, setTranslations] = useState<TranslationResource[]>([]);
   const [selectedTranslation, setSelectedTranslation] = useState(20); // Default: Sahih International
   const [memoMode, setMemoMode] = useState(false);
@@ -713,12 +724,12 @@ export default function SurahView() {
             nowPlaying={currentVerseKey === verse.verse_key}
             onPlay={(v) => {
               playAyah(v.verse_key, chapter?.id || 0, chapter?.name_complex || '');
-              if (session) logReading(v.verse_key, chapter?.id || 0, chapter?.name_complex || '');
+              logReading(v.verse_key, chapter?.id || 0, chapter?.name_complex || '');
             }}
             onRead={() => {
               markAyahRead(verse.verse_key);
               setLastRead(chapter?.name_complex || '', verse.verse_key, chapter?.id || 0);
-              if (session) logReading(verse.verse_key, chapter?.id || 0, chapter?.name_complex || '');
+              logReading(verse.verse_key, chapter?.id || 0, chapter?.name_complex || '');
             }}
           />
         ))}

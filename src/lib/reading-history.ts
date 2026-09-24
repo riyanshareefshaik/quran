@@ -1,43 +1,49 @@
-import { getSupabase } from './supabase';
+import { isChapterId, isVerseKey, newId, readJson, writeJson } from './local-store';
+
+// Recently read verses, stored only on this device.
 
 export interface ReadingHistoryEntry {
-    id: number;
+    id: string;
     verse_key: string;
     chapter_id: number;
     surah_name: string;
     read_at: string;
 }
 
+export const MAX_HISTORY = 200;
+
+const KEY = 'nq_reading_history';
+
+const isArray = (value: unknown): value is unknown[] => Array.isArray(value);
+
+function isEntry(value: unknown): value is ReadingHistoryEntry {
+    const e = value as ReadingHistoryEntry;
+    return !!e && typeof e === 'object' && typeof e.id === 'string' && isVerseKey(e.verse_key) &&
+        isChapterId(e.chapter_id) && typeof e.surah_name === 'string' && typeof e.read_at === 'string';
+}
+
+function readAll(): ReadingHistoryEntry[] {
+    return readJson<unknown[]>(KEY, [], isArray).filter(isEntry);
+}
+
 /**
- * Fire-and-forget: records that a verse was opened, for the signed-in user's
- * cross-device reading history. Silently does nothing when signed out —
- * local-only reading (bookmarks, progress) already works without an account.
+ * Records that a verse was read. Re-reading a verse moves it to the top
+ * instead of adding a duplicate; the list keeps the latest MAX_HISTORY.
  */
 export function logReading(verseKey: string, chapterId: number, surahName: string) {
-    const supabase = getSupabase();
-    if (!supabase) return;
-    supabase.rpc('log_reading', { p_verse_key: verseKey, p_chapter_id: chapterId, p_surah_name: surahName.slice(0, 80) })
-        .then(({ error }) => { if (error) console.error('Failed to log reading history:', error); });
+    if (!isVerseKey(verseKey) || !isChapterId(chapterId)) return;
+    const entry: ReadingHistoryEntry = {
+        id: newId(), verse_key: verseKey, chapter_id: chapterId,
+        surah_name: surahName.slice(0, 80), read_at: new Date().toISOString(),
+    };
+    const next = [entry, ...readAll().filter(e => e.verse_key !== verseKey)].slice(0, MAX_HISTORY);
+    writeJson(KEY, next);
 }
 
 export async function listReadingHistory(limit = 50): Promise<ReadingHistoryEntry[]> {
-    const supabase = getSupabase();
-    if (!supabase) return [];
-    const { data, error } = await supabase.from('reading_history').select('*').order('read_at', { ascending: false }).limit(limit);
-    if (error) {
-        console.error('Failed to load reading history:', error);
-        return [];
-    }
-    return data ?? [];
+    return readAll().sort((a, b) => b.read_at.localeCompare(a.read_at)).slice(0, limit);
 }
 
-export async function clearReadingHistory(userId: string): Promise<{ error: string | null }> {
-    const supabase = getSupabase();
-    if (!supabase) return { error: 'Sign in to manage reading history.' };
-    const { error } = await supabase.from('reading_history').delete().eq('user_id', userId);
-    if (error) {
-        console.error('Failed to clear reading history:', error);
-        return { error: 'Could not clear your reading history. Please try again.' };
-    }
-    return { error: null };
+export async function clearReadingHistory(): Promise<{ error: string | null }> {
+    return writeJson(KEY, []) ? { error: null } : { error: 'Could not clear your reading history. Please try again.' };
 }

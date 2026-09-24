@@ -12,9 +12,6 @@ interface BookmarkContextType {
     bookmarks: Bookmark[];
     isBookmarked: (chapterId: number) => boolean;
     toggleBookmark: (chapterId: number, chapterName: string) => void;
-    /** Replaces all bookmarks (used by cloud sync after merging). */
-    replaceBookmarks: (next: Bookmark[]) => void;
-    loaded: boolean;
 }
 
 const BookmarkContext = createContext<BookmarkContextType | undefined>(undefined);
@@ -55,7 +52,7 @@ export const BookmarkProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
 
     return (
-        <BookmarkContext.Provider value={{ bookmarks, isBookmarked, toggleBookmark, replaceBookmarks: setBookmarks, loaded }}>
+        <BookmarkContext.Provider value={{ bookmarks, isBookmarked, toggleBookmark }}>
             {children}
         </BookmarkContext.Provider>
     );

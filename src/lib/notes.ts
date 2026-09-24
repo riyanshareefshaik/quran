@@ -1,8 +1,8 @@
-import { getSupabase } from './supabase';
+import { isChapterId, isVerseKey, readJson, writeJson } from './local-store';
+
+// Personal notes on ayahs, stored only on this device.
 
 export interface Note {
-    id: string;
-    user_id: string;
     verse_key: string;
     chapter_id: number;
     body: string;
@@ -11,54 +11,56 @@ export interface Note {
 }
 
 export const NOTE_MAX_LENGTH = 4000;
+export const MAX_NOTES = 2000;
 
-/** All of the signed-in user's notes, most recently updated first. */
+const KEY = 'nq_notes';
+
+function isNote(value: unknown): value is Note {
+    const n = value as Note;
+    return !!n && typeof n === 'object' && isVerseKey(n.verse_key) && isChapterId(n.chapter_id) &&
+        typeof n.body === 'string' && typeof n.created_at === 'string' && typeof n.updated_at === 'string';
+}
+
+function isNoteList(value: unknown): value is Note[] {
+    return Array.isArray(value);
+}
+
+function readAll(): Note[] {
+    return readJson<Note[]>(KEY, [], isNoteList).filter(isNote);
+}
+
+/** All notes, most recently updated first. */
 export async function listNotes(): Promise<Note[]> {
-    const supabase = getSupabase();
-    if (!supabase) return [];
-    const { data, error } = await supabase.from('notes').select('*').order('updated_at', { ascending: false });
-    if (error) {
-        console.error('Failed to load notes:', error);
-        return [];
-    }
-    return data ?? [];
+    return readAll().sort((a, b) => b.updated_at.localeCompare(a.updated_at));
 }
 
 /** The note on one verse, or null if there isn't one. */
 export async function getNote(verseKey: string): Promise<Note | null> {
-    const supabase = getSupabase();
-    if (!supabase) return null;
-    const { data, error } = await supabase.from('notes').select('*').eq('verse_key', verseKey).maybeSingle();
-    if (error) {
-        console.error('Failed to load note:', error);
-        return null;
-    }
-    return data;
+    return readAll().find(n => n.verse_key === verseKey) ?? null;
 }
 
-/** Creates or replaces the note on a verse (one note per verse per user). */
-export async function saveNote(userId: string, verseKey: string, chapterId: number, body: string): Promise<{ error: string | null }> {
-    const supabase = getSupabase();
-    if (!supabase) return { error: 'Sign in to save notes.' };
+/** Creates or replaces the note on a verse (one note per verse). */
+export async function saveNote(verseKey: string, chapterId: number, body: string): Promise<{ error: string | null }> {
+    if (!isVerseKey(verseKey) || !isChapterId(chapterId)) return { error: 'Invalid verse.' };
     const trimmed = body.trim().slice(0, NOTE_MAX_LENGTH);
     if (!trimmed) return { error: 'Note cannot be empty.' };
-    const { error } = await supabase
-        .from('notes')
-        .upsert({ user_id: userId, verse_key: verseKey, chapter_id: chapterId, body: trimmed }, { onConflict: 'user_id,verse_key' });
-    if (error) {
-        console.error('Failed to save note:', error);
-        return { error: 'Could not save your note. Please try again.' };
+
+    const notes = readAll();
+    const now = new Date().toISOString();
+    const existing = notes.find(n => n.verse_key === verseKey);
+    if (existing) {
+        existing.body = trimmed;
+        existing.updated_at = now;
+    } else {
+        if (notes.length >= MAX_NOTES) return { error: `You can keep up to ${MAX_NOTES} notes. Delete some to add more.` };
+        notes.push({ verse_key: verseKey, chapter_id: chapterId, body: trimmed, created_at: now, updated_at: now });
     }
-    return { error: null };
+    return writeJson(KEY, notes) ? { error: null } : { error: 'Could not save your note — your device storage may be full.' };
 }
 
 export async function deleteNote(verseKey: string): Promise<{ error: string | null }> {
-    const supabase = getSupabase();
-    if (!supabase) return { error: 'Sign in to manage notes.' };
-    const { error } = await supabase.from('notes').delete().eq('verse_key', verseKey);
-    if (error) {
-        console.error('Failed to delete note:', error);
-        return { error: 'Could not delete your note. Please try again.' };
-    }
-    return { error: null };
+    const notes = readAll();
+    const next = notes.filter(n => n.verse_key !== verseKey);
+    if (next.length === notes.length) return { error: null };
+    return writeJson(KEY, next) ? { error: null } : { error: 'Could not delete your note. Please try again.' };
 }

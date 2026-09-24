@@ -54,12 +54,11 @@ const Sidebar: React.FC = () => {
                 </nav>
 
                 <div className="sidebar-footer">
-                    <Link href="/account" className={`account-link ${pathname.startsWith('/account') ? 'active' : ''}`}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
-                            <circle cx="12" cy="8" r="4" />
-                            <path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" />
+                    <Link href="/library" className={`account-link ${pathname.startsWith('/library') ? 'active' : ''}`}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M6 3h12v18l-6-4-6 4z" />
                         </svg>
-                        My Account
+                        My Library
                     </Link>
                     <nav className="footer-links" aria-label="More">
                         <Link href="/feedback">Feedback</Link>

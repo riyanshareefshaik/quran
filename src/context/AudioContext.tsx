@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
 import { fetchAyahRecitation, fetchChapterInfo, fetchChapterRecitation, getReciter, nextVerseKey, RECITERS, SURAH_VERSE_COUNTS } from '@/lib/quran-api';
 import { useProgress } from '@/context/ProgressContext';
 
@@ -44,8 +44,6 @@ interface AudioContextType extends AudioState {
     setAutoContinue: (on: boolean) => void;
     lastSession: ListeningSession | null;
     resumeListening: () => void;
-    /** Adopts a reciter/auto-continue preference synced from another device, without touching playback. */
-    applyStoredPreferences: (prefs: { reciterId?: number; autoContinue?: boolean }) => void;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -323,20 +321,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setState(prev => ({ ...prev, autoContinue: on }));
     };
 
-    // Stable identity (useCallback) so AuthContext can safely depend on it
-    // without re-running its sync effect on every render.
-    const applyStoredPreferences = useCallback((prefs: { reciterId?: number; autoContinue?: boolean }) => {
-        if (prefs.reciterId !== undefined && RECITERS.some(r => r.id === prefs.reciterId)) {
-            try { localStorage.setItem(RECITER_KEY, String(prefs.reciterId)); } catch { /* storage unavailable */ }
-            stateRef.current = { ...stateRef.current, currentReciterId: prefs.reciterId };
-            setState(prev => ({ ...prev, currentReciterId: prefs.reciterId! }));
-        }
-        if (prefs.autoContinue !== undefined) {
-            try { localStorage.setItem(CONTINUE_KEY, String(prefs.autoContinue)); } catch { /* storage unavailable */ }
-            setState(prev => ({ ...prev, autoContinue: prefs.autoContinue! }));
-        }
-    }, []);
-
     const resumeListening = () => {
         const s = lastSession;
         if (!s) return;
@@ -360,7 +344,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return (
         <AudioContext.Provider value={{
             ...state, playChapter, togglePlay, setReciter, setSpeed, seek, playAyah, stopPlayer,
-            playNext, playPrevious, setAutoContinue, lastSession, resumeListening, applyStoredPreferences,
+            playNext, playPrevious, setAutoContinue, lastSession, resumeListening,
         }}>
             {children}
         </AudioContext.Provider>

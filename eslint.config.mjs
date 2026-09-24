@@ -24,6 +24,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Native projects contain generated/copied build output, not source.
+    "android/**",
+    "ios/**",
   ]),
 ]);
 

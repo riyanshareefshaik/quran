@@ -6,7 +6,6 @@ import { AudioProvider } from "@/context/AudioContext";
 import { SettingsProvider } from "@/context/SettingsContext";
 import { ProgressProvider } from "@/context/ProgressContext";
 import { BookmarkProvider } from "@/context/BookmarkContext";
-import { AuthProvider } from "@/context/AuthContext";
 import Sidebar from "@/components/Sidebar";
 import AudioPlayer from "@/components/AudioPlayer";
 import PageViewTracker from "@/components/PageViewTracker";
@@ -66,7 +65,6 @@ export default function RootLayout({
           <ProgressProvider>
             <BookmarkProvider>
               <AudioProvider>
-              <AuthProvider>
                 <Sidebar />
                 <div className="main-layout-content">
                   {children}
@@ -74,7 +72,6 @@ export default function RootLayout({
                 <AudioPlayer />
                 <PageViewTracker />
                 <PrayerAlertsManager />
-              </AuthProvider>
               </AudioProvider>
             </BookmarkProvider>
           </ProgressProvider>

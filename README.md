@@ -5,12 +5,12 @@ recitation audio (all sourced live from [Quran.com](https://quran.com)'s
 API — never fabricated or hand-copied), prayer times and Qibla direction,
 hadith, and Islamic guides. Built with [Next.js](https://nextjs.org) for the
 web and wrapped with [Capacitor](https://capacitorjs.com) for Android/iOS.
-Accounts, cross-device sync, and the admin dashboard run on
+Feedback, content reports, announcements and the admin dashboard run on
 [Supabase](https://supabase.com) (Postgres + Auth + row-level security).
 
-The app is fully usable without an account — bookmarks, reading progress and
-settings work from local storage. Signing in (phone number + SMS code) adds
-cross-device sync plus notes, collections and reading history.
+There are no user accounts: bookmarks, reading progress, notes, favorites,
+collections and reading history are stored on the device only, so the app
+costs nothing per user to run.
 
 See **[docs/API.md](docs/API.md)** for the full backend/API reference
 (database schema, RPC functions, REST routes, security model).
@@ -24,19 +24,13 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000). The app runs without
-Supabase configured too — accounts, sync and the admin dashboard simply
+Supabase configured too — feedback, reports and the admin dashboard simply
 disable themselves (see `src/lib/supabase.ts`).
 
 ### Setting up the database
 
-In the Supabase dashboard's SQL editor, run these files **in order** (each is
-idempotent — safe to re-run):
-
-```
-supabase/schema.sql
-supabase/002_user_accounts.sql
-supabase/003_user_content.sql
-```
+In the Supabase dashboard's SQL editor, run `supabase/schema.sql` (idempotent
+— safe to re-run).
 
 Then make yourself the first admin (see the comment at the bottom of
 `schema.sql`).

@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
 import { Note, listNotes, deleteNote } from '@/lib/notes';
 import { Collection, SavedAyah, listCollections, createCollection, deleteCollection, listSavedAyahs, removeAyahFromCollection } from '@/lib/collections';
 import { ReadingHistoryEntry, listReadingHistory, clearReadingHistory } from '@/lib/reading-history';
@@ -22,6 +21,7 @@ const NotesSection: React.FC = () => {
     }, []);
 
     const remove = async (verseKey: string) => {
+        if (!window.confirm(`Delete your note on ${verseKey}?`)) return;
         const { error } = await deleteNote(verseKey);
         if (!error) setNotes(prev => prev.filter(n => n.verse_key !== verseKey));
     };
@@ -32,7 +32,7 @@ const NotesSection: React.FC = () => {
     return (
         <ul className="list">
             {notes.map(n => (
-                <li key={n.id} className="list-row">
+                <li key={n.verse_key} className="list-row">
                     <Link href={`/surah/${n.chapter_id}#${n.verse_key}`} className="list-ref">{n.verse_key}</Link>
                     <p className="list-body">{n.body}</p>
                     <div className="list-meta">
@@ -81,7 +81,6 @@ const CollectionsSection: React.FC = () => {
     const [expanded, setExpanded] = useState<string | null>(null);
     const [newName, setNewName] = useState('');
     const [error, setError] = useState('');
-    const { session } = useAuth();
     const [refreshTick, setRefreshTick] = useState(0);
 
     useEffect(() => {
@@ -92,17 +91,18 @@ const CollectionsSection: React.FC = () => {
 
     const addCollection = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!session) return;
         setError('');
-        const { collection, error: err } = await createCollection(session.user.id, newName);
+        const { collection, error: err } = await createCollection(newName);
         if (err) { setError(err); return; }
         if (collection) setCollections(prev => [...prev, collection]);
         setNewName('');
     };
 
-    const remove = async (id: string) => {
-        const { error: err } = await deleteCollection(id);
-        if (!err) setCollections(prev => prev.filter(c => c.id !== id));
+    const remove = async (c: Collection) => {
+        if (!window.confirm(`Delete the collection “${c.name}” and the ayahs saved in it?`)) return;
+        const { error: err } = await deleteCollection(c.id);
+        if (err) setError(err);
+        else setCollections(prev => prev.filter(x => x.id !== c.id));
     };
 
     if (loading) return <p className="muted">Loading collections…</p>;
@@ -117,9 +117,9 @@ const CollectionsSection: React.FC = () => {
                         <li key={c.id} className="list-row">
                             <div className="list-meta">
                                 <button type="button" className="link" onClick={() => setExpanded(x => x === c.id ? null : c.id)}>
-                                    {expanded === c.id ? '▾' : '▸'} <strong>{c.name}</strong>{c.is_default && ' (default)'}
+                                    <strong>{c.name}</strong>{c.is_default && ' (default)'}
                                 </button>
-                                {!c.is_default && <button type="button" className="link danger" onClick={() => remove(c.id)}>Delete</button>}
+                                {!c.is_default && <button type="button" className="link danger" onClick={() => remove(c)}>Delete</button>}
                             </div>
                             {expanded === c.id && <CollectionAyahs collection={c} onCountChange={() => setRefreshTick(t => t + 1)} />}
                         </li>
@@ -136,7 +136,6 @@ const CollectionsSection: React.FC = () => {
 };
 
 const HistorySection: React.FC = () => {
-    const { session } = useAuth();
     const [history, setHistory] = useState<ReadingHistoryEntry[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -147,8 +146,8 @@ const HistorySection: React.FC = () => {
     }, []);
 
     const clear = async () => {
-        if (!session) return;
-        const { error } = await clearReadingHistory(session.user.id);
+        if (!window.confirm('Clear your reading history on this device?')) return;
+        const { error } = await clearReadingHistory();
         if (!error) setHistory([]);
     };
 
@@ -157,7 +156,7 @@ const HistorySection: React.FC = () => {
     return (
         <div className="stack">
             {history.length === 0 ? (
-                <p className="muted">Nothing read yet on this account.</p>
+                <p className="muted">Nothing read yet. Verses you read or listen to will appear here.</p>
             ) : (
                 <>
                     <ul className="list">
@@ -181,13 +180,12 @@ const TABS = [
     { id: 'history', label: 'Reading History' },
 ] as const;
 
-/** Cloud-synced notes, collections and reading history — shown only when signed in. */
-const AccountContentPanel: React.FC = () => {
+/** Notes, collections and reading history saved on this device. */
+const LibraryPanel: React.FC = () => {
     const [tab, setTab] = useState<(typeof TABS)[number]['id']>('notes');
 
     return (
         <div className="card content-panel">
-            <h2>Saved content</h2>
             <div className="tabs" role="tablist">
                 {TABS.map(t => (
                     <button key={t.id} type="button" role="tab" aria-selected={tab === t.id} className={`tab ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id)}>
@@ -226,4 +224,4 @@ const AccountContentPanel: React.FC = () => {
     );
 };
 
-export default AccountContentPanel;
+export default LibraryPanel;

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export type FontSize = 'small' | 'medium' | 'large' | 'xlarge';
 
@@ -20,8 +20,6 @@ interface SettingsContextType extends SettingsState {
     setLineSpacing: (spacing: 'normal' | 'relaxed') => void;
     setPrayerCalculationMethod: (method: number) => void;
     togglePrayerSilentMode: () => void;
-    /** Applies a partial settings patch (used to adopt synced preferences from the cloud). */
-    applyPreferences: (patch: Partial<SettingsState>) => void;
 }
 
 const defaultState: SettingsState = {
@@ -83,9 +81,6 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const setLineSpacing = (spacing: 'normal' | 'relaxed') => setState(prev => ({ ...prev, lineSpacing: spacing }));
     const setPrayerCalculationMethod = (method: number) => setState(prev => ({ ...prev, prayerCalculationMethod: method }));
     const togglePrayerSilentMode = () => setState(prev => ({ ...prev, prayerSilentMode: !prev.prayerSilentMode }));
-    // Stable identity (useCallback) so AuthContext can safely depend on it
-    // without re-running its sync effect on every render.
-    const applyPreferences = useCallback((patch: Partial<SettingsState>) => setState(prev => ({ ...prev, ...patch })), []);
 
     return (
         <SettingsContext.Provider value={{
@@ -96,7 +91,6 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             setLineSpacing,
             setPrayerCalculationMethod,
             togglePrayerSilentMode,
-            applyPreferences
         }}>
             {children}
         </SettingsContext.Provider>

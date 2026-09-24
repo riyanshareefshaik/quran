@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
 import { getNote, saveNote, deleteNote, NOTE_MAX_LENGTH } from '@/lib/notes';
 import { toggleFavorite, isAyahSaved } from '@/lib/collections';
 
@@ -17,11 +16,8 @@ interface AyahNotesModalProps {
     onClose: () => void;
 }
 
-/** Lets a signed-in reader save an ayah to Favorites and write a personal note on it. */
+/** Save an ayah to Favorites and write a personal note on it (kept on this device). */
 const AyahNotesModal: React.FC<AyahNotesModalProps> = ({ verse, onClose }) => {
-    const { session } = useAuth();
-    const userId = session?.user.id ?? null;
-
     const [loaded, setLoaded] = useState(false);
     const [note, setNote] = useState('');
     const [savedNote, setSavedNote] = useState('');
@@ -31,7 +27,6 @@ const AyahNotesModal: React.FC<AyahNotesModalProps> = ({ verse, onClose }) => {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        if (!userId) return;
         let cancelled = false;
         (async () => {
             const [existingNote, saved] = await Promise.all([getNote(verse.verseKey), isAyahSaved(verse.verseKey)]);
@@ -42,7 +37,7 @@ const AyahNotesModal: React.FC<AyahNotesModalProps> = ({ verse, onClose }) => {
             setLoaded(true);
         })();
         return () => { cancelled = true; };
-    }, [userId, verse.verseKey]);
+    }, [verse.verseKey]);
 
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -51,9 +46,10 @@ const AyahNotesModal: React.FC<AyahNotesModalProps> = ({ verse, onClose }) => {
     }, [onClose]);
 
     const handleToggleFavorite = async () => {
-        if (!userId || favBusy) return;
+        if (favBusy) return;
         setFavBusy(true);
-        const { saved, error: err } = await toggleFavorite(userId, verse.verseKey, verse.chapterId);
+        setError('');
+        const { saved, error: err } = await toggleFavorite(verse.verseKey, verse.chapterId);
         setIsFavorite(saved);
         if (err) setError(err);
         setFavBusy(false);
@@ -61,17 +57,15 @@ const AyahNotesModal: React.FC<AyahNotesModalProps> = ({ verse, onClose }) => {
 
     const handleSaveNote = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!userId) return;
         setNoteState('saving');
         setError('');
-        const { error: err } = await saveNote(userId, verse.verseKey, verse.chapterId, note);
+        const { error: err } = await saveNote(verse.verseKey, verse.chapterId, note);
         if (err) { setNoteState('error'); setError(err); return; }
         setSavedNote(note.trim());
         setNoteState('saved');
     };
 
     const handleDeleteNote = async () => {
-        if (!userId) return;
         setNoteState('saving');
         setError('');
         const { error: err } = await deleteNote(verse.verseKey);
@@ -94,12 +88,7 @@ const AyahNotesModal: React.FC<AyahNotesModalProps> = ({ verse, onClose }) => {
                     </button>
                 </div>
 
-                {!session ? (
-                    <div className="notes-signin">
-                        <p>Sign in to save favorites and keep personal notes, synced across your devices.</p>
-                        <Link href="/account" className="notes-primary" onClick={onClose}>Sign in</Link>
-                    </div>
-                ) : !loaded ? (
+                {!loaded ? (
                     <p className="notes-loading">Loading…</p>
                 ) : (
                     <>
@@ -137,6 +126,9 @@ const AyahNotesModal: React.FC<AyahNotesModalProps> = ({ verse, onClose }) => {
                                 </button>
                             </div>
                         </form>
+                        <p className="notes-footnote">
+                            Saved on this device. See all your notes and favorites in <Link href="/library" onClick={onClose}>My Library</Link>.
+                        </p>
                     </>
                 )}
             </div>
@@ -157,8 +149,8 @@ const AyahNotesModal: React.FC<AyahNotesModalProps> = ({ verse, onClose }) => {
                 .notes-close { background: none; border: none; color: var(--emerald-light); cursor: pointer; padding: 0.25rem; flex-shrink: 0; }
                 .notes-close:hover { color: var(--gold-primary); }
                 .notes-close:focus-visible { outline: 2px solid var(--gold-primary); outline-offset: 2px; }
-                .notes-signin { display: flex; flex-direction: column; gap: 1rem; }
-                .notes-signin p { margin: 0; color: rgba(255, 255, 255, 0.75); font-size: 0.9rem; }
+                .notes-footnote { margin: 0; font-size: 0.75rem; color: rgba(255, 255, 255, 0.5); }
+                .notes-footnote :global(a) { color: var(--gold-primary); }
                 .notes-loading { color: rgba(255, 255, 255, 0.6); margin: 0; }
                 .notes-fav-btn {
                     display: flex; align-items: center; gap: 0.6rem; background: rgba(212, 175, 55, 0.08);

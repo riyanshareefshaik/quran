@@ -18,8 +18,6 @@ export interface ProgressState {
 interface ProgressContextType extends ProgressState {
     markAyahRead: (verseKey: string) => void;
     setLastRead: (surahName: string, verseKey: string, chapterId: number) => void;
-    /** Replaces the whole progress state (used by cloud sync after merging). */
-    replaceProgress: (next: ProgressState) => void;
 }
 
 const defaultState: ProgressState = {
@@ -115,7 +113,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
 
     return (
-        <ProgressContext.Provider value={{ ...state, markAyahRead, setLastRead, replaceProgress: setState }}>
+        <ProgressContext.Provider value={{ ...state, markAyahRead, setLastRead }}>
             {children}
         </ProgressContext.Provider>
     );
