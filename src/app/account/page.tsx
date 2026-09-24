@@ -6,6 +6,7 @@ import OrnateFrame from '@/components/OrnateFrame';
 import OrnateDivider from '@/components/OrnateDivider';
 import { getSupabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
+import AccountContentPanel from '@/components/AccountContentPanel';
 
 // Common dial codes first; "Other" lets people type any international code.
 const COUNTRIES = [
@@ -192,12 +193,14 @@ const AccountDetails: React.FC = () => {
 
             <div className="card">
                 <h2>Sync across devices</h2>
-                <p className="muted">Your bookmarks and reading progress are saved to your account and restored when you sign in on another device.</p>
+                <p className="muted">Your bookmarks, reading progress and reading preferences (reciter, font size, prayer settings) are saved to your account and restored when you sign in on another device.</p>
                 <div className="row-links">
                     <span className={`sync ${syncStatus}`}>{syncLabel}</span>
                     <button type="button" className="secondary" onClick={syncNow} disabled={syncStatus === 'syncing'}>Sync now</button>
                 </div>
             </div>
+
+            <AccountContentPanel />
 
             <div className="card">
                 <div className="row-links">
