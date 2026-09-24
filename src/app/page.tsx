@@ -12,6 +12,8 @@ import SearchModal from '@/components/SearchModal';
 import OrnateFrame from '@/components/OrnateFrame';
 import OrnateDivider from '@/components/OrnateDivider';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
+import VerseOfTheDay from '@/components/VerseOfTheDay';
+import ContinueListening from '@/components/ContinueListening';
 
 export default function Home() {
   const [showCalendar, setShowCalendar] = useState(false);
@@ -56,6 +58,10 @@ export default function Home() {
         <OrnateDivider style={{ maxWidth: 320, margin: '0 auto 3rem' }} />
 
         <AnnouncementBanner />
+
+        <ContinueListening />
+
+        <VerseOfTheDay />
 
         {/* Spiritual Dashboard Section */}
         <section className="dashboard-section">

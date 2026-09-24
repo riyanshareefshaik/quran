@@ -16,9 +16,12 @@ const AudioPlayer: React.FC = () => {
     togglePlay,
     setSpeed,
     seek,
-    playAyah,
     stopPlayer,
     audioUrl,
+    playNext,
+    playPrevious,
+    autoContinue,
+    setAutoContinue,
   } = useAudio();
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -62,8 +65,14 @@ const AudioPlayer: React.FC = () => {
 
           {/* Controls */}
           <div className="controls">
+            <button className="skip-btn" onClick={playPrevious} aria-label="Previous">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z" /></svg>
+            </button>
             <button className="play-btn gold-text" onClick={togglePlay}>
               {isPlaying ? 'PAUSE' : 'PLAY'}
+            </button>
+            <button className="skip-btn" onClick={playNext} aria-label="Next">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 5h2v14h-2zM4 5v14l11-7z" /></svg>
             </button>
             <button className="close-btn" onClick={(e) => { e.stopPropagation(); stopPlayer(); }} aria-label="Close Player">
               ✕
@@ -81,6 +90,20 @@ const AudioPlayer: React.FC = () => {
             <div className="setting-group">
               <label>Qari</label>
               <ReciterPicker compact />
+            </div>
+
+            <div className="setting-group">
+              <label>Continuous play</label>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={autoContinue}
+                className={`continue-toggle ${autoContinue ? 'on' : ''}`}
+                onClick={() => setAutoContinue(!autoContinue)}
+              >
+                <span className="continue-track"><span className="continue-thumb" /></span>
+                {autoContinue ? 'Plays the next verse or surah automatically' : 'Stops after each verse or surah'}
+              </button>
             </div>
 
             <div className="setting-group">
@@ -151,6 +174,13 @@ const AudioPlayer: React.FC = () => {
           gap: 1rem;
         }
 
+        .controls {
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          flex-shrink: 0;
+        }
+
         .chapter-info {
           display: flex;
           align-items: center;
@@ -208,6 +238,75 @@ const AudioPlayer: React.FC = () => {
         .play-btn:hover {
           background: var(--gold-primary);
           color: var(--matte-black);
+        }
+
+        .skip-btn {
+          background: none;
+          border: 1px solid rgba(212, 175, 55, 0.35);
+          color: var(--gold-primary);
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .skip-btn:hover {
+          border-color: var(--gold-primary);
+          background: rgba(212, 175, 55, 0.12);
+        }
+
+        .continue-toggle {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          background: none;
+          border: none;
+          color: rgba(255, 255, 255, 0.8);
+          font-family: inherit;
+          font-size: 0.82rem;
+          cursor: pointer;
+          padding: 0;
+          text-align: left;
+        }
+
+        .continue-track {
+          width: 40px;
+          height: 22px;
+          flex-shrink: 0;
+          border-radius: 11px;
+          border: 2px solid var(--emerald-medium);
+          position: relative;
+          transition: all 0.2s;
+        }
+
+        .continue-thumb {
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background: var(--emerald-light);
+          transition: all 0.2s;
+        }
+
+        .continue-toggle.on .continue-track {
+          background: var(--gold-primary);
+          border-color: var(--gold-primary);
+        }
+
+        .continue-toggle.on .continue-thumb {
+          left: 20px;
+          background: var(--matte-black);
+        }
+
+        .skip-btn:focus-visible, .continue-toggle:focus-visible, .play-btn:focus-visible {
+          outline: 2px solid var(--gold-primary);
+          outline-offset: 2px;
         }
 
         .close-btn {

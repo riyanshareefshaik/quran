@@ -55,6 +55,7 @@ export default function SurahsPage() {
                     <div className="title-area">
                         <h1 className="gold-text font-display">Sacred Chapters</h1>
                         <p className="subtitle">The complete revelation</p>
+                        <Link href="/offline" className="offline-link">⬇ Save for offline reading</Link>
                     </div>
                 </OrnateFrame>
 
@@ -145,6 +146,20 @@ export default function SurahsPage() {
         h1 {
           font-size: 2.5rem;
           margin-bottom: 0.3rem;
+        }
+
+        :global(.offline-link) {
+          display: inline-block;
+          margin-top: 0.75rem;
+          font-size: 0.82rem;
+          color: var(--gold-primary);
+          border: 1px solid rgba(212, 175, 55, 0.4);
+          border-radius: 20px;
+          padding: 0.35rem 0.9rem;
+        }
+
+        :global(.offline-link:hover) {
+          background: rgba(212, 175, 55, 0.12);
         }
 
         .subtitle {

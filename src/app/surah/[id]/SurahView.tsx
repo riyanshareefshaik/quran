@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { fetchChapterInfo, fetchVersesByChapter, fetchTranslationsList, Chapter, Verse, TranslationResource } from '@/lib/quran-api';
+import { fetchChapterInfo, fetchVersesByChapter, fetchTranslationsList, cleanTranslation, Chapter, Verse, TranslationResource } from '@/lib/quran-api';
 import { useAudio } from '@/context/AudioContext';
 import { useProgress } from '@/context/ProgressContext';
 import { useSettings, FontSize } from '@/context/SettingsContext';
@@ -12,6 +12,7 @@ import AyahShareModal from '@/components/AyahShareModal';
 import OrnateDivider from '@/components/OrnateDivider';
 import ReportIssueButton from '@/components/ReportIssueButton';
 import ReciterPicker from '@/components/ReciterPicker';
+import TafsirPanel from '@/components/TafsirPanel';
 
 interface VerseCardProps {
   verse: Verse;
@@ -20,10 +21,12 @@ interface VerseCardProps {
   focusMode?: boolean;
   onShare: (verse: Verse) => void;
   onPlay: (verse: Verse) => void;
+  onTafsir: (verse: Verse) => void;
   onRead?: () => void;
+  nowPlaying?: boolean;
 }
 
-const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, focusMode, onShare, onPlay, onRead }) => {
+const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, focusMode, onShare, onPlay, onTafsir, onRead, nowPlaying }) => {
   const [showTranslation, setShowTranslation] = useState(!isMemoMode);
   const cardRef = React.useRef<HTMLDivElement>(null);
 
@@ -60,15 +63,21 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
     setShowTranslation(!isMemoMode);
   }, [isMemoMode]);
 
+  // Keep the verse being recited in view during continuous play.
+  useEffect(() => {
+    if (nowPlaying) cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [nowPlaying]);
+
   return (
     <div className="verse-card-container" ref={cardRef}>
-      <div className={`glass-card verse-card ${isMemoMode && !showTranslation ? 'memo-active' : ''} ${isBlurred ? 'blurred-verse' : ''} ${focusMode ? 'focus-mode-active' : ''}`}>
+      <div className={`glass-card verse-card ${nowPlaying ? 'now-playing' : ''} ${isMemoMode && !showTranslation ? 'memo-active' : ''} ${isBlurred ? 'blurred-verse' : ''} ${focusMode ? 'focus-mode-active' : ''}`}>
 
         {!focusMode && (
           <div className="verse-header">
             <div className="verse-number-badge">{verse.verse_number}</div>
             <div className="verse-actions">
               <button className="premium-icon-btn" onClick={() => onPlay(verse)}>Play</button>
+              <button className="premium-icon-btn" onClick={() => onTafsir(verse)}>Tafsir</button>
               <button className="premium-icon-btn" onClick={() => onShare(verse)}>Share</button>
               <span className="report-slot"><ReportIssueButton contentType="quran" contentRef={`Quran ${verse.verse_key}`} /></span>
             </div>
@@ -94,7 +103,7 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
                     {verse.translations && verse.translations.length > 0 ? (
                       verse.translations.map((t: any) => (
                         <p key={t.id} className="t-text">
-                          {t.text.replace(/<[^>]*>?/gm, '')}
+                          {cleanTranslation(t.text)}
                         </p>
                       ))
                     ) : (
@@ -128,6 +137,27 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
           border-radius: 12px;
           transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .verse-card.now-playing {
+          border-color: var(--gold-primary);
+          box-shadow: 0 0 0 1px var(--gold-primary), 0 6px 28px rgba(212, 175, 55, 0.18);
+        }
+
+        .verse-actions {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+          align-items: center;
+          gap: 0.4rem;
+        }
+
+        .verse-actions .premium-icon-btn {
+          margin-left: 0;
+        }
+
+        .verse-actions .report-slot {
+          margin-left: 0;
         }
 
         .verse-card.memo-active {
@@ -301,7 +331,7 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isMemoMode, isBlurred, foc
 
 export default function SurahView() {
   const { id } = useParams();
-  const { playChapter, playAyah, isPlaying, currentChapterId, togglePlay } = useAudio();
+  const { playChapter, playAyah, isPlaying, currentChapterId, togglePlay, currentVerseKey } = useAudio();
   const { arabicFontSize, setArabicFontSize, readingComfortMode, toggleReadingComfortMode, focusMode, toggleFocusMode } = useSettings();
   const { markAyahRead, setLastRead } = useProgress();
   const [chapter, setChapter] = useState<Chapter | null>(null);
@@ -312,6 +342,8 @@ export default function SurahView() {
   const [memoMode, setMemoMode] = useState(false);
   const [visibleVerses, setVisibleVerses] = useState(1);
   const [shareVerse, setShareVerse] = useState<Verse | null>(null);
+  const [tafsirVerse, setTafsirVerse] = useState<string | null>(null);
+  const closeTafsir = React.useCallback(() => setTafsirVerse(null), []);
   const [showSettings, setShowSettings] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -669,6 +701,8 @@ export default function SurahView() {
             isBlurred={memoMode && index === visibleVerses} // Blur the very last item in memo mode
             focusMode={focusMode}
             onShare={(v) => setShareVerse(v)}
+            onTafsir={(v) => setTafsirVerse(v.verse_key)}
+            nowPlaying={currentVerseKey === verse.verse_key}
             onPlay={(v) => playAyah(
               v.verse_key,
               chapter?.id || 0,
@@ -687,11 +721,15 @@ export default function SurahView() {
           </button>
         )}
 
+        {tafsirVerse && (
+          <TafsirPanel verseKey={tafsirVerse} surahName={chapter?.name_complex || ''} onClose={closeTafsir} />
+        )}
+
         {shareVerse && (
           <AyahShareModal
             verse={{
               text_uthmani: shareVerse.text_uthmani,
-              translation: shareVerse.translations?.[0]?.text.replace(/<[^>]*>?/gm, '') || '',
+              translation: cleanTranslation(shareVerse.translations?.[0]?.text ?? ''),
               surahName: chapter?.name_complex || '',
               ayahNumber: shareVerse.verse_number
             }}

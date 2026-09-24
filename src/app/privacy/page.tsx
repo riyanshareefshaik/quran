@@ -25,6 +25,8 @@ const SECTIONS: LegalSection[] = [
             'Bookmarked surahs and your reading progress (verses read, streak, last read position).',
             'Reading settings such as Arabic font size, comfort mode and focus mode.',
             'Your preferred hadith translation language, and announcements you have dismissed.',
+            'Quran text, surah details and tafsir you have opened or saved for offline reading.',
+            'Your chosen reciter and tafsir, where you stopped listening, and your prayer-alert settings.',
         ],
     },
     {
@@ -32,6 +34,7 @@ const SECTIONS: LegalSection[] = [
         paragraphs: [
             'If you allow location access, your device’s coordinates are sent directly from your device to the AlAdhan prayer-times service to calculate prayer times, the Islamic calendar and the Qibla direction. We do not receive or store your location.',
             'You can refuse or withdraw location permission at any time in your browser or phone settings; the rest of the app keeps working.',
+            'Prayer-time alerts are scheduled on your own device. No alert data is sent to us.',
         ],
     },
     {

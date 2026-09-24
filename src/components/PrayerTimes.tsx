@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { fetchPrayerTimes, PrayerData } from '@/lib/prayer-api';
 import { getCurrentPosition } from '@/lib/geolocation';
 import { useSettings } from '@/context/SettingsContext';
+import { PrayerAlertsButton } from '@/components/PrayerAlerts';
 
 const PRAYERS = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
 
@@ -120,7 +121,10 @@ const PrayerTimes: React.FC = () => {
         <div className="hijri-date amiri-text">
           {data.date.hijri.day} {data.date.hijri.month.ar} {data.date.hijri.year} AH
         </div>
-        {prayerSilentMode && <span className="silent-badge" title="Silent Mode Active">🔕</span>}
+        <span className="header-actions">
+          {prayerSilentMode && <span className="silent-badge" title="Silent Mode Active">🔕</span>}
+          <PrayerAlertsButton />
+        </span>
       </div>
 
       <div className="countdown-section">
@@ -177,6 +181,12 @@ const PrayerTimes: React.FC = () => {
           margin: 2rem 0;
           text-align: center;
           border-color: var(--emerald-medium);
+        }
+
+        .header-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .widget-header {

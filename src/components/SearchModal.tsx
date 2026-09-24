@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { fetchChapters, Chapter } from '@/lib/quran-api';
+import { fetchChapters, cleanTranslation, Chapter } from '@/lib/quran-api';
 
 interface SearchResult {
     verse_key: string;
@@ -164,7 +164,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                                 <div className="res-meta gold-text">{res.verse_key}</div>
                                 <div className="res-text amiri-text">{res.text}</div>
                                 {res.translations && res.translations[0] && (
-                                    <div className="res-trans">{res.translations[0].text.replace(/<[^>]*>?/gm, '')}</div>
+                                    <div className="res-trans">{cleanTranslation(res.translations[0].text)}</div>
                                 )}
                             </Link>
                         ))

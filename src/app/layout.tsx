@@ -9,6 +9,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import Sidebar from "@/components/Sidebar";
 import AudioPlayer from "@/components/AudioPlayer";
 import PageViewTracker from "@/components/PageViewTracker";
+import { PrayerAlertsManager } from "@/components/PrayerAlerts";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -70,6 +71,7 @@ export default function RootLayout({
                 </div>
                 <AudioPlayer />
                 <PageViewTracker />
+                <PrayerAlertsManager />
               </AudioProvider>
               </AuthProvider>
             </BookmarkProvider>

@@ -1,4 +1,37 @@
+import { cacheGet, networkFirst } from './offline-store';
+
 const BASE_URL = 'https://api.quran.com/api/v4';
+
+/** Verses per surah (Hafs), index 0 = Al-Fatihah. Verified against Quran.com. */
+export const SURAH_VERSE_COUNTS = [
+    7, 286, 200, 176, 120, 165, 206, 75, 129, 109, 123, 111, 43, 52, 99, 128, 111, 110, 98, 135,
+    112, 78, 118, 64, 77, 227, 93, 88, 69, 60, 34, 30, 73, 54, 45, 83, 182, 88, 75, 85,
+    54, 53, 89, 59, 37, 35, 38, 29, 18, 45, 60, 49, 62, 55, 78, 96, 29, 22, 24, 13,
+    14, 11, 11, 18, 12, 12, 30, 52, 52, 44, 28, 28, 20, 56, 40, 31, 50, 40, 46, 42,
+    29, 19, 36, 25, 22, 17, 19, 26, 30, 20, 15, 21, 11, 8, 8, 19, 5, 8, 8, 11,
+    11, 8, 3, 9, 5, 4, 7, 3, 6, 3, 5, 4, 5, 6,
+];
+
+/** The verse after `verseKey`, continuing into the next surah; null after An-Nas 114:6. */
+export function nextVerseKey(verseKey: string): string | null {
+    const [s, a] = verseKey.split(':').map(Number);
+    if (!s || !a || s > 114) return null;
+    if (a < SURAH_VERSE_COUNTS[s - 1]) return `${s}:${a + 1}`;
+    return s < 114 ? `${s + 1}:1` : null;
+}
+
+async function getJson(url: string) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Request failed (${res.status})`);
+    return res.json();
+}
+
+/** Plain translation text: drops footnote markers (<sup>1</sup>) and any other tags. */
+export function cleanTranslation(html: string): string {
+    return html.replace(/<sup[^>]*>.*?<\/sup>/gi, '').replace(/<[^>]*>?/gm, '').replace(/\s+([,.;:!?])/g, '$1').trim();
+}
+
+export const versesCacheKey = (chapterId: number, translationId: number) => `verses:${chapterId}:${translationId}`;
 
 export interface Chapter {
     id: number;
@@ -52,10 +85,7 @@ export interface Word {
 
 export async function fetchChapters(language: string = 'en'): Promise<Chapter[]> {
     try {
-        const res = await fetch(`${BASE_URL}/chapters?language=${language}`);
-        if (!res.ok) throw new Error('Failed to fetch chapters');
-        const data = await res.json();
-        return data.chapters;
+        return await networkFirst(`chapters:${language}`, async () => (await getJson(`${BASE_URL}/chapters?language=${language}`)).chapters);
     } catch (error) {
         console.error('Error fetching chapters:', error);
         return [];
@@ -64,10 +94,7 @@ export async function fetchChapters(language: string = 'en'): Promise<Chapter[]>
 
 export async function fetchChapterInfo(chapterId: number, language: string = 'en'): Promise<Chapter | null> {
     try {
-        const res = await fetch(`${BASE_URL}/chapters/${chapterId}?language=${language}`);
-        if (!res.ok) throw new Error('Failed to fetch chapter info');
-        const data = await res.json();
-        return data.chapter;
+        return await networkFirst(`chapter:${chapterId}:${language}`, async () => (await getJson(`${BASE_URL}/chapters/${chapterId}?language=${language}`)).chapter);
     } catch (error) {
         console.error(`Error fetching chapter ${chapterId} info:`, error);
         return null;
@@ -80,12 +107,12 @@ export async function fetchVersesByChapter(
 ): Promise<Verse[]> {
     const { translationId = 20, perPage = 10, page = 1, language = 'en' } = params;
     try {
-        const res = await fetch(
-            `${BASE_URL}/verses/by_chapter/${chapterId}?language=${language}&words=true&translations=${translationId}&per_page=${perPage}&page=${page}&fields=text_uthmani,verse_number,verse_key`
-        );
-        if (!res.ok) throw new Error('Failed to fetch verses');
-        const data = await res.json();
-        return data.verses;
+        const url = `${BASE_URL}/verses/by_chapter/${chapterId}?language=${language}&translations=${translationId}&per_page=${perPage}&page=${page}&fields=text_uthmani,verse_number,verse_key`;
+        // Whole-surah requests are saved for offline reading.
+        if (page === 1 && perPage >= SURAH_VERSE_COUNTS[chapterId - 1]) {
+            return await networkFirst(versesCacheKey(chapterId, translationId), async () => (await getJson(url)).verses);
+        }
+        return (await getJson(url)).verses;
     } catch (error) {
         console.error(`Error fetching verses for chapter ${chapterId}:`, error);
         return [];
@@ -141,12 +168,60 @@ export async function fetchAyahRecitation(verseKey: string, reciterId: number): 
     }
 }
 
+/** One verse with a translation (used by Verse of the Day). */
+export async function fetchVerseByKey(verseKey: string, translationId = 20): Promise<Verse | null> {
+    try {
+        return await networkFirst(`verse:${verseKey}:${translationId}`, async () =>
+            (await getJson(`${BASE_URL}/verses/by_key/${verseKey}?translations=${translationId}&fields=text_uthmani,verse_number,verse_key`)).verse);
+    } catch (error) {
+        console.error(`Error fetching verse ${verseKey}:`, error);
+        return null;
+    }
+}
+
+/** True when a surah has been saved on this device for offline reading. */
+export async function isSurahSaved(chapterId: number, translationId = 20): Promise<boolean> {
+    return (await cacheGet(versesCacheKey(chapterId, translationId))) !== undefined;
+}
+
+// Classical and widely used tafsirs available from Quran.com.
+export const TAFSIRS = [
+    { id: 169, name: 'Ibn Kathir (abridged)', language: 'English' },
+    { id: 168, name: "Ma'arif al-Qur'an — Mufti Muhammad Shafi", language: 'English' },
+    { id: 14, name: 'Tafsir Ibn Kathir', language: 'Arabic' },
+    { id: 91, name: "Tafsir al-Sa'di", language: 'Arabic' },
+    { id: 16, name: 'Tafsir al-Muyassar', language: 'Arabic' },
+    { id: 15, name: 'Tafsir al-Tabari', language: 'Arabic' },
+    { id: 90, name: 'Tafsir al-Qurtubi', language: 'Arabic' },
+    { id: 94, name: 'Tafsir al-Baghawi', language: 'Arabic' },
+    { id: 160, name: 'Tafsir Ibn Kathir', language: 'Urdu' },
+    { id: 164, name: 'Tafsir Ibn Kathir', language: 'Bengali' },
+    { id: 165, name: 'Tafsir Ahsanul Bayaan', language: 'Bengali' },
+    { id: 166, name: 'Tafsir Abu Bakr Zakaria', language: 'Bengali' },
+    { id: 170, name: "Tafsir al-Sa'di", language: 'Russian' },
+] as const;
+
+export interface TafsirResult {
+    html: string;
+    /** Verse keys this passage explains (some tafsirs cover several verses together). */
+    verses: string[];
+}
+
+export async function fetchTafsir(tafsirId: number, verseKey: string): Promise<TafsirResult | null> {
+    try {
+        return await networkFirst(`tafsir:${tafsirId}:${verseKey}`, async () => {
+            const data = await getJson(`${BASE_URL}/tafsirs/${tafsirId}/by_ayah/${verseKey}`);
+            return { html: String(data.tafsir?.text ?? ''), verses: Object.keys(data.tafsir?.verses ?? {}) };
+        });
+    } catch (error) {
+        console.error(`Error fetching tafsir ${tafsirId} for ${verseKey}:`, error);
+        return null;
+    }
+}
+
 export async function fetchTranslationsList(language: string = 'en'): Promise<TranslationResource[]> {
     try {
-        const res = await fetch(`${BASE_URL}/resources/translations?language=${language}`);
-        if (!res.ok) throw new Error('Failed to fetch translations list');
-        const data = await res.json();
-        return data.translations;
+        return await networkFirst(`translations:${language}`, async () => (await getJson(`${BASE_URL}/resources/translations?language=${language}`)).translations);
     } catch (error) {
         console.error('Error fetching translations list:', error);
         return [];
