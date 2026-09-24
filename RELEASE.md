@@ -23,11 +23,11 @@ GitHub.
 ## 2. Tell the build where the key is (once)
 
 ```bash
-cp android/keystore.properties.example android/keystore.properties
+scripts/set-signing-password.sh
 ```
 
-Open `android/keystore.properties` and replace the two passwords with the
-one you chose. This file is git-ignored — never commit it.
+Type the password you chose (it stays hidden). It is saved in
+`android/keystore.properties`, which is git-ignored — never commit it.
 
 ## 3. Build the release bundle (every release)
 
