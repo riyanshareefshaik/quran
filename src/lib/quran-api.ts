@@ -110,13 +110,31 @@ export async function fetchChapterRecitation(chapterId: number, reciterId: numbe
     }
 }
 
+function absoluteAudioUrl(url: string): string {
+    if (url.startsWith('http')) return url;
+    if (url.startsWith('//')) return `https:${url}`;
+    return `https://verses.quran.com/${url.replace(/^\//, '')}`;
+}
+
 export async function fetchAyahRecitation(verseKey: string, reciterId: number): Promise<string | null> {
+    const reciter = getReciter(reciterId);
+    const [surah, ayah] = verseKey.split(':').map(Number);
+    if (!Number.isInteger(surah) || !Number.isInteger(ayah)) return null;
+
+    // Reciters without per-verse audio on Quran.com use the verse-by-verse
+    // everyayah.com collection (preferring Quran.com's own mirror of it).
+    if ('everyayah' in reciter.ayahSource) {
+        const file = `${String(surah).padStart(3, '0')}${String(ayah).padStart(3, '0')}.mp3`;
+        const host = reciter.ayahSource.mirror ? 'https://mirrors.quranicaudio.com/everyayah' : 'https://everyayah.com/data';
+        return `${host}/${reciter.ayahSource.everyayah}/${file}`;
+    }
+
     try {
-        const res = await fetch(`${BASE_URL}/recitations/${reciterId}/by_ayah/${verseKey}`);
+        const res = await fetch(`${BASE_URL}/recitations/${reciter.ayahSource.recitationId}/by_ayah/${verseKey}`);
         if (!res.ok) throw new Error('Failed to fetch ayah recitation');
         const data = await res.json();
-        const audioUrl = data.audio_files?.[0]?.url;
-        return audioUrl ? (audioUrl.startsWith('http') ? audioUrl : `https://verses.quran.com/${audioUrl}`) : null;
+        const audioUrl: string | undefined = data.audio_files?.[0]?.url;
+        return audioUrl ? absoluteAudioUrl(audioUrl) : null;
     } catch (error) {
         console.error(`Error fetching recitation for ayah ${verseKey}:`, error);
         return null;
@@ -135,9 +153,38 @@ export async function fetchTranslationsList(language: string = 'en'): Promise<Tr
     }
 }
 
-export const RECITERS = [
-    { id: 7, name: 'Mishary Rashid Alafasy' },
-    { id: 2, name: 'Abdul Rahman Al-Sudais' },
-    { id: 6, name: 'Maher Al-Muaiqly' },
-    { id: 3, name: 'Saad Al-Ghamdi' }
+export interface Reciter {
+    /** Quran.com chapter-recitation id (full-surah audio). Also the id stored in settings. */
+    id: number;
+    name: string;
+    arabicName: string;
+    note?: string;
+    /** Where verse-by-verse audio comes from. */
+    ayahSource: { recitationId: number } | { everyayah: string; mirror: boolean };
+}
+
+// Every entry was checked against Quran.com's API: the full-surah audio and
+// the verse-by-verse audio both exist for all 114 surahs.
+export const RECITERS: Reciter[] = [
+    { id: 7, name: 'Mishary Rashid Alafasy', arabicName: 'مشاري راشد العفاسي', ayahSource: { recitationId: 7 } },
+    { id: 3, name: 'Abdul Rahman Al-Sudais', arabicName: 'عبد الرحمن السديس', note: 'Imam, Masjid al-Haram', ayahSource: { recitationId: 3 } },
+    { id: 97, name: 'Yasser Al-Dosari', arabicName: 'ياسر الدوسري', note: 'Imam, Masjid al-Haram', ayahSource: { everyayah: 'Yasser_Ad-Dussary_128kbps', mirror: true } },
+    { id: 159, name: 'Maher Al-Muaiqly', arabicName: 'ماهر المعيقلي', note: 'Imam, Masjid al-Haram', ayahSource: { everyayah: 'MaherAlMuaiqly128kbps', mirror: false } },
+    { id: 162, name: 'Abdullah Awad Al-Juhany', arabicName: 'عبد الله عواد الجهني', note: 'Imam, Masjid al-Haram', ayahSource: { everyayah: 'Abdullaah_3awwaad_Al-Juhaynee_128kbps', mirror: false } },
+    { id: 10, name: 'Saud Al-Shuraim', arabicName: 'سعود الشريم', note: 'Former imam, Masjid al-Haram', ayahSource: { recitationId: 10 } },
+    { id: 13, name: 'Saad Al-Ghamdi', arabicName: 'سعد الغامدي', ayahSource: { everyayah: 'Ghamadi_40kbps', mirror: true } },
+    { id: 4, name: 'Abu Bakr Al-Shatri', arabicName: 'أبو بكر الشاطري', ayahSource: { recitationId: 4 } },
+    { id: 104, name: 'Nasser Al-Qatami', arabicName: 'ناصر القطامي', ayahSource: { everyayah: 'Nasser_Alqatami_128kbps', mirror: false } },
+    { id: 158, name: 'Ali Jaber', arabicName: 'علي جابر', ayahSource: { everyayah: 'Ali_Jaber_64kbps', mirror: false } },
+    { id: 163, name: 'Abdullah Basfar', arabicName: 'عبد الله بصفر', ayahSource: { everyayah: 'Abdullah_Basfar_192kbps', mirror: true } },
+    { id: 5, name: 'Hani Ar-Rifai', arabicName: 'هاني الرفاعي', ayahSource: { recitationId: 5 } },
+    { id: 161, name: 'Khalifa Al-Tunaiji', arabicName: 'خليفة الطنيجي', ayahSource: { everyayah: 'khalefa_al_tunaiji_64kbps', mirror: false } },
+    { id: 2, name: 'Abdul Basit Abdus Samad', arabicName: 'عبد الباسط عبد الصمد', note: 'Murattal', ayahSource: { recitationId: 2 } },
+    { id: 1, name: 'Abdul Basit Abdus Samad', arabicName: 'عبد الباسط عبد الصمد', note: 'Mujawwad', ayahSource: { recitationId: 1 } },
+    { id: 6, name: 'Mahmoud Khalil Al-Husary', arabicName: 'محمود خليل الحصري', ayahSource: { recitationId: 6 } },
+    { id: 9, name: 'Mohamed Siddiq Al-Minshawi', arabicName: 'محمد صديق المنشاوي', note: 'Murattal', ayahSource: { recitationId: 9 } },
 ];
+
+export function getReciter(id: number): Reciter {
+    return RECITERS.find(r => r.id === id) ?? RECITERS[0];
+}

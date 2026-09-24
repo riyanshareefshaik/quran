@@ -65,6 +65,7 @@ const SECTIONS: LegalSection[] = [
             'An SMS delivery provider connected through Supabase — receives your mobile number and the code to send you the sign-in text message.',
             'Vercel — hosts the website.',
             'Quran.com (Quran Foundation) — Quran text, translations and recitation audio.',
+            'EveryAyah — verse-by-verse recitation audio for some reciters.',
             'AlAdhan — prayer times, Islamic calendar and Qibla direction.',
             'jsDelivr CDN — delivers the open-source hadith collection files.',
         ],

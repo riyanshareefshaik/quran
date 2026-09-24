@@ -32,19 +32,30 @@ interface AudioContextType extends AudioState {
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
+const RECITER_KEY = 'quran_reciter';
+
+function readSavedReciter(): number {
+    if (typeof window === 'undefined') return RECITERS[0].id;
+    try {
+        const saved = Number(localStorage.getItem(RECITER_KEY));
+        if (RECITERS.some(r => r.id === saved)) return saved;
+    } catch { /* storage unavailable */ }
+    return RECITERS[0].id;
+}
+
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { markAyahRead, setLastRead } = useProgress();
-    const [state, setState] = useState<AudioState>({
+    const [state, setState] = useState<AudioState>(() => ({
         isPlaying: false,
         currentChapterId: null,
         currentChapterName: null,
-        currentReciterId: RECITERS[0].id,
+        currentReciterId: readSavedReciter(),
         audioUrl: null,
         currentTime: 0,
         duration: 0,
         playbackSpeed: 1,
         currentVerseKey: null,
-    });
+    }));
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const stateRef = useRef(state);
@@ -168,22 +179,21 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
 
     const setReciter = async (reciterId: number) => {
+        try { localStorage.setItem(RECITER_KEY, String(reciterId)); } catch { /* storage unavailable */ }
+        const { currentChapterId, currentVerseKey, playbackSpeed } = stateRef.current;
         setState(prev => ({ ...prev, currentReciterId: reciterId }));
-        if (state.currentChapterId) {
-            // Fetch with the new reciter ID immediately to avoid state delay issues
-            // Note: If playing an individual Ayah, we might fetch chapter recitation instead,
-            // which restarts the Surah. For this MVP, this fallback is acceptable or we should check if audioUrl is a chapter or ayah.
-            const url = await fetchChapterRecitation(state.currentChapterId, reciterId);
-            if (url && audioRef.current) {
-                audioRef.current.src = url;
-                await audioRef.current.play().catch(e => console.warn('Playback interrupted:', e));
-                setState(prev => ({
-                    ...prev,
-                    audioUrl: url,
-                    isPlaying: true,
-                    currentReciterId: reciterId
-                }));
-            }
+        if (!currentChapterId || !audioRef.current) return;
+
+        // Replay what was playing — the same verse, or the whole surah — in the new voice.
+        const { fetchAyahRecitation } = await import('@/lib/quran-api');
+        const url = currentVerseKey
+            ? await fetchAyahRecitation(currentVerseKey, reciterId)
+            : await fetchChapterRecitation(currentChapterId, reciterId);
+        if (url && audioRef.current) {
+            audioRef.current.src = url;
+            audioRef.current.playbackRate = playbackSpeed;
+            await audioRef.current.play().catch(e => console.warn('Playback interrupted:', e));
+            setState(prev => ({ ...prev, audioUrl: url, isPlaying: true, currentReciterId: reciterId }));
         }
     };
 
