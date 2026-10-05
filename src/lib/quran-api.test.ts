@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { cleanTranslation, nextVerseKey, getReciter, RECITERS, SURAH_VERSE_COUNTS } from './quran-api';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { cleanTranslation, nextVerseKey, getReciter, fetchChapterDescription, RECITERS, SURAH_VERSE_COUNTS } from './quran-api';
 
 describe('SURAH_VERSE_COUNTS', () => {
     it('has exactly 114 surahs', () => {
@@ -48,6 +48,53 @@ describe('cleanTranslation', () => {
 
     it('removes stray whitespace before punctuation', () => {
         expect(cleanTranslation('Mercy , and Grace .')).toBe('Mercy, and Grace.');
+    });
+});
+
+describe('fetchChapterDescription', () => {
+    const originalFetch = global.fetch;
+
+    beforeEach(() => {
+        global.fetch = vi.fn();
+    });
+
+    afterEach(() => {
+        global.fetch = originalFetch;
+    });
+
+    function mockResponse(body: unknown, ok = true) {
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            ok,
+            status: ok ? 200 : 404,
+            json: () => Promise.resolve(body),
+        });
+    }
+
+    it('prefers short_text, strips HTML, and collapses whitespace', async () => {
+        mockResponse({ chapter_info: { short_text: '<p>The  Opening</p>\nof the Quran.' } });
+        expect(await fetchChapterDescription(1)).toBe('The Opening of the Quran.');
+    });
+
+    it('falls back to text when short_text is missing', async () => {
+        mockResponse({ chapter_info: { text: 'A longer passage about the surah.' } });
+        expect(await fetchChapterDescription(2)).toBe('A longer passage about the surah.');
+    });
+
+    it('truncates long descriptions with an ellipsis', async () => {
+        mockResponse({ chapter_info: { short_text: 'a'.repeat(300) } });
+        const result = await fetchChapterDescription(3);
+        expect(result!.length).toBeLessThanOrEqual(160);
+        expect(result!.endsWith('…')).toBe(true);
+    });
+
+    it('returns null when Quran.com has nothing on file', async () => {
+        mockResponse({ chapter_info: {} });
+        expect(await fetchChapterDescription(4)).toBeNull();
+    });
+
+    it('returns null (not a throw) when the request fails', async () => {
+        mockResponse(null, false);
+        expect(await fetchChapterDescription(5)).toBeNull();
     });
 });
 

@@ -12,6 +12,8 @@ interface SurahCardProps {
   revelationPlace: string;
   versesCount: number;
   translatedName: string;
+  /** undefined = still loading, null = none available from Quran.com, string = ready to show. */
+  description?: string | null;
 }
 
 const SurahCard: React.FC<SurahCardProps> = ({
@@ -21,6 +23,7 @@ const SurahCard: React.FC<SurahCardProps> = ({
   revelationPlace,
   versesCount,
   translatedName,
+  description,
 }) => {
   const { playChapter, isPlaying, currentChapterId, currentReciterId } = useAudio();
   const { isBookmarked, toggleBookmark } = useBookmarks();
@@ -106,6 +109,12 @@ const SurahCard: React.FC<SurahCardProps> = ({
             {revelationPlace} • {versesCount} Ayahs
           </p>
         </div>
+
+        {description === undefined ? (
+          <p className="surah-description loading">Loading description…</p>
+        ) : description ? (
+          <p className="surah-description">{description}</p>
+        ) : null}
 
         {/* Hover Actions Overlay */}
         <div className="surah-actions-overlay">
@@ -243,6 +252,22 @@ const SurahCard: React.FC<SurahCardProps> = ({
 
         .amiri-text {
           font-family: var(--font-amiri), serif;
+        }
+
+        .surah-description {
+          flex-basis: 100%;
+          margin: 0.75rem 0 0 0;
+          padding-top: 0.75rem;
+          border-top: 1px solid var(--glass-border);
+          font-size: 0.88rem;
+          line-height: 1.55;
+          color: rgba(255, 255, 255, 0.72);
+          text-align: left;
+        }
+
+        .surah-description.loading {
+          color: rgba(255, 255, 255, 0.35);
+          font-style: italic;
         }
 
         .surah-actions-overlay {
