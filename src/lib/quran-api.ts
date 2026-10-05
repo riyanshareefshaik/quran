@@ -1,4 +1,4 @@
-import { cacheGet, networkFirst } from './offline-store';
+import { cacheGet, cacheKeys, networkFirst } from './offline-store';
 
 const BASE_URL = 'https://api.quran.com/api/v4';
 
@@ -101,6 +101,31 @@ export async function fetchChapterInfo(chapterId: number, language: string = 'en
     }
 }
 
+const DESCRIPTION_MAX_LENGTH = 160;
+
+/**
+ * A short, plain-text summary of what a surah is about, for the Surah index
+ * list — sourced from Quran.com's chapter info (the same source backing
+ * fetchTafsir below), never written by this app. Returns null if Quran.com
+ * has nothing on file for that language, so callers can fall back to just
+ * showing the surah's translated name instead.
+ */
+export async function fetchChapterDescription(chapterId: number, language: string = 'en'): Promise<string | null> {
+    try {
+        return await networkFirst(`chapter-description:${chapterId}:${language}`, async () => {
+            const data = await getJson(`${BASE_URL}/chapters/${chapterId}/info?language=${language}`);
+            const info = data.chapter_info ?? {};
+            const raw = (typeof info.short_text === 'string' && info.short_text.trim()) || (typeof info.text === 'string' && info.text.trim()) || '';
+            const plain = raw.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
+            if (!plain) return null;
+            return plain.length > DESCRIPTION_MAX_LENGTH ? `${plain.slice(0, DESCRIPTION_MAX_LENGTH - 1).trimEnd()}…` : plain;
+        });
+    } catch (error) {
+        console.error(`Error fetching description for chapter ${chapterId}:`, error);
+        return null;
+    }
+}
+
 export async function fetchVersesByChapter(
     chapterId: number,
     params: { translationId?: number; perPage?: number; page?: number; language?: string } = {}
@@ -182,6 +207,61 @@ export async function fetchVerseByKey(verseKey: string, translationId = 20): Pro
 /** True when a surah has been saved on this device for offline reading. */
 export async function isSurahSaved(chapterId: number, translationId = 20): Promise<boolean> {
     return (await cacheGet(versesCacheKey(chapterId, translationId))) !== undefined;
+}
+
+export interface CachedSearchResult {
+    verse_key: string;
+    text: string;
+    translations: { text: string }[];
+}
+
+// Tashkeel (Arabic diacritics): verses are stored fully vocalized, but most
+// people search without typing them, so both sides are stripped before
+// comparing.
+function stripArabicDiacritics(text: string): string {
+    return text.replace(/[ؐ-ًؚ-ٟۖ-ٰۭ]/g, '');
+}
+
+/**
+ * Searches only the surahs already saved for offline reading (see the "Read
+ * Offline" page) — the fallback SearchModal uses when the live Quran.com
+ * search API can't be reached. Matches Arabic text (diacritic-insensitive)
+ * and the cached translation; ordered by verse key since there's no
+ * relevance ranking available offline.
+ */
+export async function searchCachedVerses(query: string, translationId = 20): Promise<CachedSearchResult[]> {
+    const trimmed = query.trim();
+    if (trimmed.length < 2) return [];
+    const normalizedArabicQuery = stripArabicDiacritics(trimmed);
+    const lowerQuery = trimmed.toLowerCase();
+
+    const keys = (await cacheKeys('verses:')).filter(k => k.endsWith(`:${translationId}`));
+    const results: CachedSearchResult[] = [];
+
+    for (const key of keys) {
+        const verses = await cacheGet<Verse[]>(key);
+        if (!verses) continue;
+        for (const verse of verses) {
+            const arabicMatch = stripArabicDiacritics(verse.text_uthmani).includes(normalizedArabicQuery);
+            const translationRaw = verse.translations?.[0]?.text;
+            const translationMatch = !!translationRaw && cleanTranslation(translationRaw).toLowerCase().includes(lowerQuery);
+            if (arabicMatch || translationMatch) {
+                results.push({
+                    verse_key: verse.verse_key,
+                    text: verse.text_uthmani,
+                    translations: translationRaw ? [{ text: translationRaw }] : [],
+                });
+            }
+        }
+    }
+
+    return results
+        .sort((a, b) => {
+            const [aChapter, aVerse] = a.verse_key.split(':').map(Number);
+            const [bChapter, bVerse] = b.verse_key.split(':').map(Number);
+            return aChapter - bChapter || aVerse - bVerse;
+        })
+        .slice(0, 50);
 }
 
 // Classical and widely used tafsirs available from Quran.com.

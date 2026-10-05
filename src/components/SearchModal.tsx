@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { fetchChapters, cleanTranslation, Chapter } from '@/lib/quran-api';
+import { fetchChapters, cleanTranslation, searchCachedVerses, Chapter } from '@/lib/quran-api';
 
 interface SearchResult {
     verse_key: string;
@@ -19,6 +19,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
     const [isSearching, setIsSearching] = useState(false);
     const [filter, setFilter] = useState<'all' | 'meccan' | 'medinan'>('all');
     const [searchError, setSearchError] = useState<string | null>(null);
+    const [isOffline, setIsOffline] = useState(false);
     const [chapters, setChapters] = useState<Chapter[]>([]);
 
     const inputRef = useRef<HTMLInputElement>(null);
@@ -75,6 +76,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
             if (query.trim().length < 3 || jumpTarget || matchingSurahs.length > 0) {
                 setResults([]);
                 setSearchError(null);
+                setIsOffline(false);
                 return;
             }
 
@@ -87,10 +89,27 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                 }
                 const data = await res.json();
                 setResults(data.search?.results || []);
+                setIsOffline(false);
             } catch (error) {
-                console.error("Search failed", error);
-                setResults([]);
-                setSearchError('Search is temporarily unavailable. Please try again shortly.');
+                console.error("Live search failed, falling back to surahs saved for offline reading", error);
+                // Same network-first, cache-fallback pattern the rest of the
+                // app uses (see src/lib/offline-store.ts) — search whatever
+                // surahs this device has already saved instead of just
+                // failing when there's no connection.
+                const cached = await searchCachedVerses(query);
+                if (cached.length > 0) {
+                    setResults(cached);
+                    setIsOffline(true);
+                    setSearchError(null);
+                } else {
+                    setResults([]);
+                    setIsOffline(false);
+                    setSearchError(
+                        typeof navigator !== 'undefined' && !navigator.onLine
+                            ? "You're offline and haven't saved any surahs for offline reading yet. Save some from the Read Offline page, then search again."
+                            : 'Search is temporarily unavailable. Please try again shortly.'
+                    );
+                }
             }
             setIsSearching(false);
         };
@@ -159,15 +178,22 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                     ) : searchError ? (
                         <div className="search-status error">{searchError}</div>
                     ) : results.length > 0 ? (
-                        results.map((res, i) => (
-                            <Link href={`/surah/${res.verse_key.split(':')[0]}#${res.verse_key}`} key={i} className="result-item" onClick={onClose}>
-                                <div className="res-meta gold-text">{res.verse_key}</div>
-                                <div className="res-text amiri-text">{res.text}</div>
-                                {res.translations && res.translations[0] && (
-                                    <div className="res-trans">{cleanTranslation(res.translations[0].text)}</div>
-                                )}
-                            </Link>
-                        ))
+                        <>
+                            {isOffline && (
+                                <div className="offline-notice">
+                                    Offline — showing matches from surahs you&apos;ve saved for offline reading only.
+                                </div>
+                            )}
+                            {results.map((res, i) => (
+                                <Link href={`/surah/${res.verse_key.split(':')[0]}#${res.verse_key}`} key={i} className="result-item" onClick={onClose}>
+                                    <div className="res-meta gold-text">{res.verse_key}</div>
+                                    <div className="res-text amiri-text">{res.text}</div>
+                                    {res.translations && res.translations[0] && (
+                                        <div className="res-trans">{cleanTranslation(res.translations[0].text)}</div>
+                                    )}
+                                </Link>
+                            ))}
+                        </>
                     ) : query.trim().length >= 3 ? (
                         <div className="search-status">No verses found.</div>
                     ) : (
@@ -303,6 +329,17 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                 .search-status.error {
                     color: #e0a04a;
                     font-style: normal;
+                }
+
+                .offline-notice {
+                    margin: 0 1rem 0.5rem;
+                    padding: 0.6rem 1rem;
+                    background: rgba(212, 175, 55, 0.08);
+                    border: 1px solid rgba(212, 175, 55, 0.3);
+                    border-radius: 8px;
+                    color: var(--gold-primary);
+                    font-size: 0.78rem;
+                    text-align: center;
                 }
 
                 :global(.jump-item) {
