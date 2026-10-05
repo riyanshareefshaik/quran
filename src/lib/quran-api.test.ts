@@ -83,8 +83,17 @@ describe('fetchChapterDescription', () => {
     it('truncates long descriptions with an ellipsis', async () => {
         mockResponse({ chapter_info: { short_text: 'a'.repeat(300) } });
         const result = await fetchChapterDescription(3);
-        expect(result!.length).toBeLessThanOrEqual(160);
+        expect(result!.length).toBeLessThanOrEqual(49);
         expect(result!.endsWith('…')).toBe(true);
+    });
+
+    it('breaks at a word boundary instead of chopping a word in half', async () => {
+        // 10 four-letter words (49 chars total) so the 48-char cutoff lands
+        // 3 characters into the last word — the exact case this guards against.
+        const words = ['aaaa', 'bbbb', 'cccc', 'dddd', 'eeee', 'ffff', 'gggg', 'hhhh', 'iiii', 'jjjj'];
+        mockResponse({ chapter_info: { short_text: words.join(' ') } });
+        const result = await fetchChapterDescription(6);
+        expect(result).toBe('aaaa bbbb cccc dddd eeee ffff gggg hhhh iiii…');
     });
 
     it('returns null when Quran.com has nothing on file', async () => {
