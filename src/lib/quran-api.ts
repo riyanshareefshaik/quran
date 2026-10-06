@@ -101,7 +101,17 @@ export async function fetchChapterInfo(chapterId: number, language: string = 'en
     }
 }
 
-const DESCRIPTION_MAX_LENGTH = 160;
+const DESCRIPTION_MAX_LENGTH = 48;
+
+/** Cuts text to at most `max` chars, breaking at the last space so words are never chopped in half. */
+function truncateAtWord(text: string, max: number): string {
+    if (text.length <= max) return text;
+    const cut = text.slice(0, max);
+    const lastSpace = cut.lastIndexOf(' ');
+    // Only break on a space if it leaves a reasonable amount of text; a very
+    // early space (or none at all, e.g. one long word) just hard-cuts instead.
+    return (lastSpace > max * 0.4 ? cut.slice(0, lastSpace) : cut).trimEnd();
+}
 
 /**
  * A short, plain-text summary of what a surah is about, for the Surah index
@@ -118,7 +128,7 @@ export async function fetchChapterDescription(chapterId: number, language: strin
             const raw = (typeof info.short_text === 'string' && info.short_text.trim()) || (typeof info.text === 'string' && info.text.trim()) || '';
             const plain = raw.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
             if (!plain) return null;
-            return plain.length > DESCRIPTION_MAX_LENGTH ? `${plain.slice(0, DESCRIPTION_MAX_LENGTH - 1).trimEnd()}…` : plain;
+            return plain.length > DESCRIPTION_MAX_LENGTH ? `${truncateAtWord(plain, DESCRIPTION_MAX_LENGTH)}…` : plain;
         });
     } catch (error) {
         console.error(`Error fetching description for chapter ${chapterId}:`, error);
