@@ -12,8 +12,8 @@ interface SurahCardProps {
   revelationPlace: string;
   versesCount: number;
   translatedName: string;
-  /** undefined = still loading, null = none available from Quran.com, string = ready to show. */
-  description?: string | null;
+  /** One-word editorial theme (see src/lib/surah-themes.ts) — empty string if none. */
+  theme: string;
 }
 
 const SurahCard: React.FC<SurahCardProps> = ({
@@ -23,7 +23,7 @@ const SurahCard: React.FC<SurahCardProps> = ({
   revelationPlace,
   versesCount,
   translatedName,
-  description,
+  theme,
 }) => {
   const { playChapter, isPlaying, currentChapterId, currentReciterId } = useAudio();
   const { isBookmarked, toggleBookmark } = useBookmarks();
@@ -110,11 +110,7 @@ const SurahCard: React.FC<SurahCardProps> = ({
           </p>
         </div>
 
-        {description === undefined ? (
-          <p className="surah-description loading">Loading description…</p>
-        ) : description ? (
-          <p className="surah-description">{description}</p>
-        ) : null}
+        {theme && <p className="surah-description">{theme}</p>}
 
         {/* Hover Actions Overlay */}
         <div className="surah-actions-overlay">
@@ -256,18 +252,15 @@ const SurahCard: React.FC<SurahCardProps> = ({
 
         .surah-description {
           flex-basis: 100%;
-          margin: 0.75rem 0 0 0;
-          padding-top: 0.75rem;
+          margin: 0.6rem 0 0 0;
+          padding-top: 0.6rem;
           border-top: 1px solid var(--glass-border);
-          font-size: 0.88rem;
-          line-height: 1.55;
-          color: rgba(255, 255, 255, 0.72);
+          font-size: 0.75rem;
+          font-weight: 600;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          color: var(--emerald-light);
           text-align: left;
-        }
-
-        .surah-description.loading {
-          color: rgba(255, 255, 255, 0.35);
-          font-style: italic;
         }
 
         .surah-actions-overlay {
